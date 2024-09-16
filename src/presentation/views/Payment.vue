@@ -304,8 +304,8 @@ const deleteRecord = (payment) => {
   justify-content: space-between;
   align-items: center;
   padding-top: 20px;
-  padding-left: 50px;
-  padding-right: 50px;
+  padding-left: 30px;
+  padding-right: 30px;
 }
 
 .table-header h2 {
