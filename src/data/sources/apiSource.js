@@ -129,5 +129,102 @@ export const apiSource = {
       handleApiError(error);
     }
   },
+
+  async getBankByName(bankName) {
+    try {
+      const response = await authService.getBankByName(bankName);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource getBankByName:', error);
+      handleApiError(error);
+    }
+  },
+
+
+  async getPendingRegistration() {
+    try{
+      const response = await authService.getPendingRegistration();
+      console.log('apiSource: getPendingRegistration', response);
+      return response.data;
+    }
+    catch (error) {
+      console.error('Error in apiSource getPendingRegistration:', error);
+      handleApiError(error);
+    }
+  },
+
+  async attestRegistration(attestRegistrationRequest) {
+    try {
+      console.log('apiSource', attestRegistrationRequest);
+      const response = await authService.attestRegistration(attestRegistrationRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource attestRegistrationRequest:', error);
+      handleApiError(error);
+    }
+  },
+
+  async getApprovedUsers() {
+    try{
+      const response = await authService.getApprovedUsers();
+      console.log('apiSource: getApprovedUsers', response);
+      return response.data;
+    }
+    catch (error) {
+      console.error('Error in apiSource getApprovedUsers:', error);
+      handleApiError(error);
+    }
+  },
+
+  async getRejectedUsers() {
+    try{
+      const response = await authService.getRejectedUsers();
+      console.log('apiSource: getRejectedUsers', response);
+      return response.data;
+    }
+    catch (error) {
+      console.error('Error in apiSource getRejectedUsers:', error);
+      handleApiError(error);
+    }
+  },
+
+  async getPendingTransfer() {
+    try{
+      const response = await authService.getPendingTransfer();
+      console.log('apiSource: getPendingTransfer', response);
+      return response.data;
+    }
+    catch (error) {
+      console.error('Error in apiSource getPendingTransfer:', error);
+      handleApiError(error);
+    }
+  },
+
+  async getApprovedTransfer() {
+    try{
+      const response = await authService.getApprovedTransfer();
+      console.log('apiSource: getApprovedTransfer', response);
+      return response.data;
+    }
+    catch (error) {
+      console.error('Error in apiSource getApprovedTransfer:', error);
+      handleApiError(error);
+    }
+  },
+
+  async approveTransfer(approveTransferRequest) {
+    try {
+      console.log('apiSource', approveTransferRequest);
+      const response = await authService.approveTransfer(approveTransferRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource approveTransfer:', error);
+      handleApiError(error);
+    }
+  },
   
 };
+

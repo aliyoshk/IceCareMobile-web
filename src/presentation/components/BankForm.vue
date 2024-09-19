@@ -1,15 +1,15 @@
 <template>
-    <div class="payment-form">
+    <div class="bank-form">
         <h2>Add New Record</h2>
         <div class="form-content">
             <div class="form-item">
-                <label for="name">Customer Name</label>
-                <input type="text" id="name" v-model="payment.CustomerName" placeholder="Enter customer name" />
+                <label for="name">Name</label>
+                <input type="text" id="name" v-model="bank.Name" placeholder="Enter customer name" />
             </div>
 
             <div class="form-item">
-                <label for="balance">Amount($)</label>
-                <input type="number" id="balance" v-model="payment.DollarAmount" placeholder="Enter dollar amount" />
+                <label for="balance">Amount</label>
+                <input type="number" id="balance" v-model="bank.Amount" placeholder="Enter dollar amount" />
             </div>
 
             <div class="form-actions">
@@ -25,9 +25,9 @@
 <script setup>
 import { ref } from 'vue';
 
-const payment = ref({
-  CustomerName: '',
-  DollarAmount: ''
+const bank = ref({
+  Name: '',
+  Amount: ''
 });
 
 const emit = defineEmits(['formSubmitted', 'formClosed']);
@@ -37,13 +37,13 @@ const closeForm = () => {
 };
 
 const submitForm = () => {
-  emit('formSubmitted', payment.value);
+  emit('formSubmitted', bank.value);
 };
 
 </script>
 
 <style scoped>
-.payment-form {
+.bank-form {
     display: flex;
     flex-direction: column;
     padding: 10px;
@@ -54,7 +54,7 @@ const submitForm = () => {
     overflow-y: auto;
 }
 
-.payment-form h2 {
+.bank-form h2 {
     margin-bottom: 20px;
     font-size: 18px;
     font-weight: bold;

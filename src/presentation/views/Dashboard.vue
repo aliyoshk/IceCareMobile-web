@@ -145,12 +145,12 @@ const recentTransactions = ref([]);
 const newDollarValue = ref('');
 
 const barChartData = ref({
-  labels: [],
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   datasets: [
     {
       label: 'Total Monthly Income ($)',
       backgroundColor: 'goldenrod',
-      data: [],
+      data: [1200, 1500, 800, 1700, 2000, 1800, 2200, 2100, 1900, 2300, 2500, 2400],
     },
   ],
 });
@@ -180,28 +180,29 @@ const barChartOptions = ref({
 });
 
 const pieChartData = ref({
-  labels: [],
+  labels: ['In App (Credit)', 'Bank Transfer (Walk in)', 'Cash (Walk in)', 'In App (Debit)'],
   datasets: [
     {
       label: 'Transaction Distribution',
-      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-      data: [],
+      backgroundColor: ['#A90836', '#0223CF', '#23B454', '#FF9900'],
+      data: [15, 15, 5, 15],
     },
   ],
 });
 
 const pieChartOptions = ref({
   responsive: true,
+  cutout: '60%',
   plugins: {
     legend: {
-      position: 'top',
+      position: 'bottom',
     },
     tooltip: {
       callbacks: {
         label: (tooltipItem) => `${tooltipItem.label}: ${tooltipItem.raw}`,
       },
     },
-  },
+  }
 });
 
 const editPrice = () => {
@@ -437,7 +438,7 @@ const onMountedHandler = async () => {
 .table-row {
   display: flex;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 10px 10px;
 }
 
 .table-header {
@@ -474,7 +475,7 @@ const onMountedHandler = async () => {
 .pricing-details h4,
 .transaction-trend h4 {
   margin: 0;
-  font-size: 18px;
+  font-size: 14px;
   color: #333;
 }
 
@@ -488,48 +489,6 @@ const onMountedHandler = async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-/* Media Queries for Smaller Screens */
-@media (max-width: 768px) {
-  .metric-cards .card.metric {
-    flex: 1 1 calc(50% - 15px);
-    /* 2 cards per row */
-  }
-
-  .top-section {
-    flex-direction: column;
-  }
-
-  .chart-card,
-  .info-cards {
-    flex: 1 1 100%;
-    /* Full width */
-    margin-bottom: 15px;
-  }
-
-  .info-cards {
-    flex-direction: column;
-  }
-
-  .transfer-list,
-  .transaction-history {
-    flex: 1 1 100%;
-    /* Full width */
-    margin-right: 0;
-    margin-left: 0;
-  }
-
-  .pricing-trend-section {
-    flex-direction: column;
-  }
-
-  .pricing-details,
-  .transaction-trend {
-    width: 100%;
-    /* Full width */
-    margin-bottom: 15px;
-  }
 }
 
 /* Spinner Styling */
@@ -648,4 +607,90 @@ input {
   text-align: center;
   color: black;
 }
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield; /* For Firefox */
+}
+
+
+/* Add a media query for tablets and smaller devices */
+@media (max-width: 1024px) {
+  .metric-cards .card.metric {
+    flex: 1 1 calc(33% - 15px);
+    /* 3 cards per row on larger tablets */
+  }
+
+  .chart-card, .info-cards {
+    flex: 1 1 100%;
+    /* Stack chart and info cards vertically */
+    margin-bottom: 15px;
+  }
+
+  .transfer-list, .transaction-history {
+    flex: 1 1 100%;
+    /* Stack transfer list and transaction history vertically */
+  }
+
+  .pricing-details, .transaction-trend {
+    flex: 1 1 100%;
+    /* Stack pricing details and transaction trend vertically */
+  }
+}
+
+/* Media query for mobile devices */
+@media (max-width: 768px) {
+  .metric-cards .card.metric {
+    flex: 1 1 calc(50% - 10px);
+    /* 2 cards per row on smaller screens */
+  }
+
+  .top-section, .pricing-trend-section, .transfer-transaction-section {
+    flex-direction: column;
+    /* Stack sections vertically */
+  }
+
+  .dollar-form {
+    margin-left: 10%;
+    margin-right: 10%;
+    /* Reduce margin for smaller screens */
+  }
+
+  .dollar-button {
+    margin-left: 30%;
+    margin-right: 30%;
+    /* Adjust button margin for mobile */
+  }
+}
+
+/* Media query for very small devices (e.g., phones in portrait mode) */
+@media (max-width: 480px) {
+  .metric-cards .card.metric {
+    flex: 1 1 100%;
+    /* 1 card per row on very small devices */
+  }
+
+  .dollar-form {
+    margin-left: 5%;
+    margin-right: 5%;
+    /* Further reduce margin for very small devices */
+  }
+
+  .dollar-button {
+    margin-left: 20%;
+    margin-right: 20%;
+    /* Center the button for very small devices */
+  }
+
+  .available-dollar-value, .dollar-rate-value {
+    font-size: 20px;
+    /* Adjust font sizes for very small screens */
+  }
+}
+
 </style>

@@ -119,4 +119,101 @@ export const dashboardRepository = {
     }
   },
 
+  async getBankByName(bankName) {
+    try {
+      const response = await apiSource.getBankByName(bankName);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository getBankByName:', error.message);
+      throw new Error(error.message || 'Failed to fetch bank by name');
+    }
+  },
+
+  async getPendingRegistration() {
+    try {
+      const response = await apiSource.getPendingRegistration();
+      console.log('dashboardRepository: getPendingRegistration', response);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.getPendingRegistration:', error);
+      throw new Error(error.message || 'Failed to fetch data');
+    }
+  },
+
+  async attestRegistration(attestRegistrationRequest) {
+    try {
+      console.log('dashboardRepository', attestRegistrationRequest);
+      const response = await apiSource.attestRegistration(attestRegistrationRequest)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.attestRegistration:', attestRegistrationRequest, ":::::", error);
+      throw new Error(error.message || 'Failed to add data');
+    }
+  },
+
+  async getApprovedUsers() {
+    try {
+      const response = await apiSource.getApprovedUsers();
+      console.log('dashboardRepository: getApprovedUsers', response);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.getApprovedUsers:', error);
+      throw new Error(error.message || 'Failed to fetch data');
+    }
+  },
+
+  async getRejectedUsers() {
+    try {
+      const response = await apiSource.getRejectedUsers();
+      console.log('dashboardRepository: getRejectedUsers', response);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.getRejectedUsers:', error);
+      throw new Error(error.message || 'Failed to fetch data');
+    }
+  },
+
+  async getPendingTransfer() {
+    try {
+      const response = await apiSource.getPendingTransfer();
+      console.log('dashboardRepository: getPendingTransfer', response);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.getPendingTransfer:', error);
+      throw new Error(error.message || 'Failed to fetch data');
+    }
+  },
+
+
+  async getApprovedTransfer() {
+    try {
+      const response = await apiSource.getApprovedTransfer();
+      console.log('dashboardRepository: getApprovedTransfer', response);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.getApprovedTransfer:', error);
+      throw new Error(error.message || 'Failed to fetch data');
+    }
+  },
+
+  async approveTransfer(approveTransferRequest) {
+    try {
+      console.log('dashboardRepository', approveTransferRequest);
+      const response = await apiSource.approveTransfer(approveTransferRequest)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.approveTransfer:', approveTransferRequest, ":::::", error);
+      throw new Error(error.message || 'Failed to add data');
+    }
+  },
+
 };
+

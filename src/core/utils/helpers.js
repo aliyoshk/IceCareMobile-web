@@ -8,10 +8,15 @@ export function formatDate(date, format = 'DD/MM/YYYY') {
 }
 
 export function formatCurrency(amount, currency = 'NGN') {
-    const symbol = {
+  const symbol = {
       NGN: '₦',
       USD: '$'
-    };
+  };
 
-    return symbol[currency]+amount;
-  }
+  const formattedAmount = parseFloat(amount).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+  });
+
+  return symbol[currency] + formattedAmount;
+}

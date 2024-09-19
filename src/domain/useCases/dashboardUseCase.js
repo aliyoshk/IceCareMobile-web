@@ -96,10 +96,9 @@ export const getPaymentsUseCase = async() => {
   } 
   catch (error) {
     console.error('Error in dashboardUseCase: getPayments', error);
-    throw new Error(error);
+    throw new Error(error.message);
   }
 };
-
 
 export const addPaymentUseCase = async (paymentRequest) => {
   try {
@@ -111,5 +110,91 @@ export const addPaymentUseCase = async (paymentRequest) => {
   catch (error) {
     console.log('Error in dashboardUseCase: addPaymentUseCase', error);
     throw new Error(error.message || 'An error occurred adding payment record');
+  }
+};
+
+export const getBankByNameUseCase = async (bankName) => {
+  try {
+    return await dashboardRepository.getBankByName(bankName);
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: getBankByNameUseCase', error.message);
+    throw new Error(error.message || 'An error occurred while fetching the bank by name');
+  }
+};
+
+export const getPendingRegistration = async() => {
+  try {
+    return await dashboardRepository.getPendingRegistration();
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: getPendingRegistration', error);
+    throw new Error(error.message);
+  }
+};
+
+export const attestRegistration = async (attestRegistrationRequest) => {
+  try {
+    console.log('dashboardUseCase', attestRegistrationRequest);
+    const response = await dashboardRepository.attestRegistration(attestRegistrationRequest);
+    console.log('Response from API:', response);
+    return response;
+  } 
+  catch (error) {
+    console.log('Error in dashboardUseCase: attestRegistration', error);
+    throw new Error(error.message || 'An error occurred adding attestRegistration record');
+  }
+};
+
+export const getApprovedUsers = async() => {
+  try {
+    return await dashboardRepository.getApprovedUsers();
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: getApprovedUsers', error);
+    throw new Error(error.message);
+  }
+};
+
+export const getRejectedUsers = async() => {
+  try {
+    return await dashboardRepository.getRejectedUsers();
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: getRejectedUsers', error);
+    throw new Error(error.message);
+  }
+};
+
+export const getPendingTransfer = async() => {
+  try {
+    return await dashboardRepository.getPendingTransfer();
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: getPendingTransfer', error);
+    throw new Error(error.message);
+  }
+};
+
+export const getApprovedTransfer = async() => {
+  try {
+    return await dashboardRepository.getApprovedTransfer();
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: getApprovedTransfer', error);
+    throw new Error(error.message);
+  }
+};
+
+export const approveTransfer = async (approveTransferRequest) => {
+  try {
+    console.log('dashboardUseCase', approveTransferRequest);
+    const response = await dashboardRepository.approveTransfer(approveTransferRequest);
+    console.log('Response from API:', response);
+    return response;
+  } 
+  catch (error) {
+    console.log('Error in dashboardUseCase: approveTransfer', error);
+    throw new Error(error.message || 'An error occurred adding approveTransfer record');
   }
 };

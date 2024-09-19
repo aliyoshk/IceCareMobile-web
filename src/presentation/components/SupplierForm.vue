@@ -10,7 +10,7 @@
       <div class="form-item horizontal-group">
         <div class="form-item-wrapper">
           <label for="phone">Phone Number</label>
-          <input type="text" id="phone" v-model="supplier.phone" placeholder="Enter phone number" />
+          <input type="number" id="phone" v-model="supplier.phone" placeholder="Enter phone number" />
         </div>
         <div class="form-item-wrapper">
           <label for="payment">Mode of Payment</label>
@@ -29,7 +29,7 @@
         <label for="banks">Banks</label>
         <div v-for="(bank, index) in supplier.banks" :key="index" class="bank-item">
           <input type="text" v-model="bank.name" placeholder="Bank Name" />
-          <input type="text" v-model="bank.amount" placeholder="Amount" />
+          <input type="number" v-model="bank.amount" placeholder="Amount" />
           <span class="remove-bank" @click="removeBank(index)">&#x2715;</span>
         </div>
         <div class="add-bank-container">
@@ -40,23 +40,23 @@
       <div class="form-item horizontal-group">
         <div class="form-item-wrapper">
           <label for="total-amount-naira">Total Amount (Naira)</label>
-          <input type="text" id="total-amount-naira" v-model="supplier.totalAmountNaira"
+          <input type="number" id="total-amount-naira" v-model="supplier.totalAmountNaira"
             placeholder="Enter total amount in Naira" :disabled="shouldDisableTotalAmount" value=""/>
         </div>
         <div class="form-item-wrapper">
           <label for="balance">Balance</label>
-          <input type="text" id="balance" v-model="supplier.balance" placeholder="Enter balance" />
+          <input type="number" id="balance" v-model="supplier.balance" placeholder="Enter balance" />
         </div>
       </div>
 
       <div class="form-item horizontal-group">
         <div class="form-item-wrapper">
           <label for="dollar-rate">Dollar Rate</label>
-          <input type="text" id="dollar-rate" v-model="supplier.dollarRate" placeholder="Enter dollar rate" />
+          <input type="number" id="dollar-rate" v-model="supplier.dollarRate" placeholder="Enter dollar rate" />
         </div>
         <div class="form-item-wrapper">
           <label for="amount-dollar">Amount in Dollar</label>
-          <input type="text" id="amount-dollar" v-model="supplier.amountDollar" placeholder="Enter amount in Dollar" />
+          <input type="number" id="amount-dollar" v-model="supplier.amountDollar" placeholder="Enter amount in Dollar" />
         </div>
       </div>
 
@@ -229,5 +229,15 @@ export default {
 
 .form-actions button:hover {
   background-color: #0056b3;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield; /* For Firefox */
 }
 </style>

@@ -129,5 +129,95 @@ export const authService = {
     }
   },
 
+  async getBankByName(bankName) {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_BANK_BY_NAME(bankName));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getBankByName:', error);
+      throw error;
+    }
+  },
+
+  async getPendingRegistration() {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_PENDING_REGISTRATION);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getPendingRegistration:', error);
+      throw error;
+    }
+  },
+
+  async attestRegistration(attestRegistrationRequest) {
+    try {
+      console.log('Sending attestRegistration:', attestRegistrationRequest);
+      const response = await apiClient.post(API_ENDPOINTS.REGISTRATION_ACTION, attestRegistrationRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService attestRegistration:', error);
+      throw error;
+    }
+  },
+
+  async getApprovedUsers() {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_APPROVE_CUSTOMERS);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getApprovedUsers:', error);
+      throw error;
+    }
+  },
+
+  async getRejectedUsers() {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_REJECTED_CUSTOMERS);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getRejectedUsers:', error);
+      throw error;
+    }
+  },
+
+  async getPendingTransfer() {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_PENDING_TRANSFER);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getPendingTransfer:', error);
+      throw error;
+    }
+  },
+
+  async getApprovedTransfer() {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_APPROVED_TRANSFER);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getApprovedTransfer:', error);
+      throw error;
+    }
+  },
+
+  async approveTransfer(approveTransferRequest) {
+    try {
+      console.log('Sending approveTransfer:', approveTransferRequest);
+      const response = await apiClient.post(API_ENDPOINTS.APPROVE_TRANSFER, approveTransferRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService approveTransfer:', error);
+      throw error;
+    }
+  },
+
   // Add more auth-related services as needed
 };

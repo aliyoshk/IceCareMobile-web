@@ -1,7 +1,9 @@
 <template>
-  <div class="app-container">
+  <!-- <div class="app-container"> -->
+  <div :class="isLoginRoute || isRegistrationRoute || isTransferRoute || isTransferDetailsRoute ? 'app-container-white' : 'app-container'">
     <!-- Sidebar Section -->
-    <aside v-if="!isLoginRoute" class="sidebar">
+    <aside v-if="!isLoginRoute && !isRegistrationRoute && !isTransferRoute && !isTransferDetailsRoute" class="sidebar">
+
       <div class="logo-container">
         <img alt="App Logo" class="logo" src="@/assets/logo.svg" width="100" height="100" />
         <h4>
@@ -11,6 +13,7 @@
           <span class="golden-text">Ltd</span>
         </h4>
       </div>
+
       <nav class="nav-links">
         <RouterLink to="/dashboard" exact-active-class="active-link">
           <img class="nav-icon" src="@/assets/ic_dashboard.svg" alt="Dashboard Icon" />
@@ -43,11 +46,12 @@
       </nav>
     </aside>
 
+
     <!-- Greeting and Header Section (outside sidebar, but hidden on login route) -->
     <div class="content-container">
-      <header v-if="!isLoginRoute" class="header">
+      <header v-if="!isLoginRoute && !isRegistrationRoute && !isTransferRoute && !isTransferDetailsRoute" class="header">
         <div class="greeting">
-          <span>Hi, {{adminName}}</span>
+          <span>Hi, {{ adminName }}</span>
         </div>
         <div class="actions">
           <button class="dropdown">Dropdown</button>
@@ -65,7 +69,11 @@
           <span class="golden-text">Ltd</span>
         </h4>
       </div>
-      <main :class="{ 'main-content': !isLoginRoute, 'login-content': isLoginRoute }">
+      <main :class="{ 
+        'main-content': !isLoginRoute && !isRegistrationRoute && !isTransferRoute && !isTransferDetailsRoute, 
+        'login-content': isLoginRoute, 
+        'registration-content': isRegistrationRoute || isTransferRoute || isTransferDetailsRoute
+        }">
         <RouterView />
       </main>
     </div>
@@ -87,9 +95,15 @@ export default {
     console.log('app.vuestored admin name:', adminStore.name);
 
     const isLoginRoute = computed(() => route.path === '/login');
-    
+    const isRegistrationRoute = computed(() => route.path === '/registration');
+    const isTransferRoute = computed(() => route.path === '/transfer')
+    const isTransferDetailsRoute = computed(() => route.path === '/transfer-details');
+
     return {
       isLoginRoute,
+      isRegistrationRoute,
+      isTransferRoute,
+      isTransferDetailsRoute,
       adminName: computed(() => localStorageSource.getAdminName() ?? adminStore.name)
     };
   }
@@ -103,8 +117,16 @@ export default {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #E9E5E5;
   font-family: 'Inter', sans-serif;
+  background-color: #E9E5E5;
+}
+
+.app-container-white {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  font-family: 'Inter', sans-serif;
+  background-color: white;
 }
 
 .sidebar {
@@ -158,7 +180,8 @@ export default {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  padding-left: 20px; /* Adds space for the sidebar */
+  padding-left: 20px;
+  /* Adds space for the sidebar */
   overflow: hidden;
 }
 
@@ -176,6 +199,17 @@ export default {
   align-items: center;
   height: 100vh;
   width: 100vw;
+}
+
+.registration-content {
+  flex-grow: 1;
+  width: 70%;             /* Set width to 50% of the screen */
+  margin: 0 auto;          /* Center the content horizontally */
+  overflow-y: hidden;
+  text-align: center;
+  display: flex;           /* Enable flexbox */
+  justify-content: center; /* Center horizontally */
+  align-items: center;     /* Center vertically */
 }
 
 .logo-only {
@@ -222,7 +256,8 @@ header {
   gap: 10px;
 }
 
-.dropdown, .icon {
+.dropdown,
+.icon {
   padding: 8px 16px;
   background-color: #42A5F5;
   color: white;
@@ -230,4 +265,7 @@ header {
   border-radius: 4px;
   cursor: pointer;
 }
+
+
+
 </style>

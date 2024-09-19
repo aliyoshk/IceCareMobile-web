@@ -6,6 +6,11 @@ import Customer from '@/presentation/views/Customer.vue';
 import { useUserStore } from '@/presentation/store/userStore';
 import Payment from '@/presentation/views/Payment.vue';
 import Bank from '@/presentation/views/Bank.vue';
+import BackOffice from '../views/BackOffice.vue';
+import Registration from '../views/Registration.vue';
+import Transfer from '../views/Transfer.vue';
+import AdminPanel from '../views/AdminPanel.vue';
+import TransferDetails from '../views/TransferDetails.vue';
 
 const routes = [
   { path: '/login', name: 'Login', component: Login },
@@ -14,6 +19,11 @@ const routes = [
   { path: '/customer', name: 'Customer', component: Customer, meta: { requiresAuth: true } },
   { path: '/payment', name: 'Payment', component: Payment, meta: { requiresAuth: true } },
   { path: '/bank', name: 'Bank', component: Bank, meta: { requiresAuth: true } },
+  { path: '/back-office', name: 'BackOffice', component: BackOffice, meta: { requiresAuth: true } },
+  { path: '/registration', name: 'Registration', component: Registration, meta: { requiresAuth: true } },
+  { path: '/transfer', name: 'Transfer', component: Transfer, meta: { requiresAuth: true } },
+  { path: '/admin-panel', name: 'AdminPanel', component: AdminPanel, meta: { requiresAuth: true } },
+  { path: '/transfer-details', name: 'TransferDetails', component: TransferDetails, meta: { requiresAuth: true } },
   { path: '/', redirect: '/login' }
 ];
 
