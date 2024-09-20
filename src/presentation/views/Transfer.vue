@@ -51,7 +51,7 @@
                         <td>{{ formatDate(item.transactionDate) }}</td>
                         <td>{{ item.transferReference || '-' }}</td>
                         <td>{{ item.customerName || '-' }}</td>
-                        <td>{{ calculateTotalAmount(item.bankDetails) }}</td>
+                        <td>{{ formatCurrency(calculateTotalAmount(item.bankDetails)) }}</td>
                         <td>{{ item.status }}</td>
                         <td class="view" @click="view(item)">View</td>
                     </tr>
@@ -132,7 +132,7 @@ const calculateTotalAmount = (bankDetails) => {
     if (!bankDetails || bankDetails.length === 0) {
         return 0;
     }
-    return bankDetails.reduce((total, bankDetail) => total + (bankDetail.transferredAmount || 0), 0);
+    return bankDetails.reduce((total, bankDetail) => total + (bankDetail.amountTransferred || 0), 0);
 };
 
 const filteredResponse = computed(() => {
@@ -148,7 +148,12 @@ const goBack = () => {
 
 const view = (item) => {
     toast.success('Selected is:' + item.customerName);
-    router.push({ name: 'TransferDetails' });
+    
+    // router.push({ name: 'TransferDetails', query: { selectedCustomer: item }});
+    router.push({
+        name: 'TransferDetails',
+        query: { selectedCustomer: JSON.stringify(item) }
+    });
 };
 
 

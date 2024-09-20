@@ -86,11 +86,6 @@
 
     <Spinner :loading="loading" />
 
-    <!-- Display the error message if present -->
-    <ErrorDialog v-if="error" :error="error" @close="clearError" />
-
-
-
     <div v-if="showDollarForm" class="modal-overlay">
       <div class="modal">
         <form @submit.prevent="updateDollar">
@@ -102,13 +97,16 @@
 
           <div class="dollar-form">
             <label for="newDollarValue">Price (Naira)</label>
-            <input type="number" id="newDollarValue" name="newDollarValue" v-model="newDollarValue">
+            <input type="number" step="0.01" id="newDollarValue" name="newDollarValue" v-model="newDollarValue">
             <button class="dollar-button" type="submit">Save</button>
           </div>
 
         </form>
       </div>
     </div>
+
+    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="showApiDialog = false"
+      :success="apiStatus" />
 
   </div>
 </template>
@@ -119,24 +117,26 @@ import { Bar, Pie } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
 import { fetchDashboardDataUseCase, updateDollarRateUseCase } from '../../domain/useCases/dashboardUseCase';
 import Spinner from '../components/Spinner.vue';
-import ErrorDialog from '../components/ErrorDialog.vue';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import ic_image from '@/assets/ic_supplier.svg';
 import { storesManager } from '@/presentation/store/userStore';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import { localStorageSource } from '@/data/sources/localStorage';
+import CustomDialog from '../components/CustomDialog.vue';
 //import icons from '@/assets/i*.svg';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
 
-components: { Bar, Pie, Spinner, ErrorDialog }
-
+const store = storesManager();
 const toast = useToast();
 const loading = ref(false);
+const responseMessage = ref('')
+const apiStatus = ref(false);
+const showApiDialog = ref(false);
+
 const showDollarForm = ref(false);
 const dollarUpdate = ref(false);
-
 const metrics = ref([]);
 const availableDollar = ref('');
 const dollarRate = ref('');
@@ -206,7 +206,6 @@ const pieChartOptions = ref({
 });
 
 const editPrice = () => {
-  alert('Edit Price Clicked!');
   showDollarForm.value = true;
 };
 
@@ -215,33 +214,41 @@ const updateDollar = async () => {
     console.log(newDollarValue.value + "has been inserted");
 
     loading.value = true;
-
     try {
       const response = await updateDollarRateUseCase(newDollarValue.value);
+      console.log("Dollar update response", response)
+
       newDollarValue.value = '';
       showDollarForm.value = false;
       toast.success(response.message);
 
       if (response.success) {
+        showApiDialog.value = true;
+        apiStatus.value = response.success;
+        responseMessage.value = response.message;
+
         dollarUpdate.value = true
+        console.log("Lets listen to update flag", dollarUpdate.value);
       }
+
     }
     catch (error) {
-      console.log('Error occurred:', error.message);
-      alert('Error occurred:', error.message);
+      showApiDialog.value = true;
+      apiStatus.value = false;
+      responseMessage.value = error.message;
     } finally {
       loading.value = false;
     }
   }
   else {
-    alert("Field should not be empty and should be greather than 0");
+    toast.success("Field should not be empty and should be greather than 0");
   }
 };
 
 watchEffect(() => {
+  console.log("Lets listen to watch effect flag", dollarUpdate.value);
   if (dollarUpdate.value === true) {
     onMountedHandler()
-    dollarUpdate.value === false;
   }
 });
 
@@ -249,7 +256,7 @@ onMounted(async () => {
   onMountedHandler();
 });
 
-const store = storesManager();
+
 
 const onMountedHandler = async () => {
   loading.value = true;
@@ -262,7 +269,7 @@ const onMountedHandler = async () => {
     localStorageSource.savedAdminName(dashboardData.data.adminName);
     localStorageSource.savedDollarRate(dashboardData.data.dollarRate);
     localStorageSource.savedAvailableDollar(dashboardData.data.availableDollarAmount);
-  
+
     metrics.value = dashboardData.metrics || [
       { title: 'All Time Earnings', value: formatCurrency(dashboardData.data.totalTransferredAmount.toLocaleString()) || '0', icon: ic_image },
       { title: 'Total No of Transactions', value: '1,500', icon: ic_image },
@@ -271,7 +278,7 @@ const onMountedHandler = async () => {
     ];
 
     availableDollar.value = formatCurrency(dashboardData.data.availableDollarAmount.toLocaleString(), 'USD') || '';
-    dollarRate.value =formatCurrency(dashboardData.data.dollarRate.toLocaleString()) || '';
+    dollarRate.value = formatCurrency(dashboardData.data.dollarRate);
 
 
     recentTransfers.value = dashboardData.recentTransfers || ['Transfer 1', 'Transfer 2', 'Transfer 3', 'Transfer 4', 'Transfer 5'];
@@ -290,11 +297,13 @@ const onMountedHandler = async () => {
 
   }
   catch (error) {
-    console.log('Error occurred:', error.message);
-    alert('Error occurred:', error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
   }
   finally {
     loading.value = false;
+    dollarUpdate.value === false;
   }
 };
 
@@ -610,12 +619,13 @@ input {
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 input[type=number] {
-    -moz-appearance: textfield; /* For Firefox */
+  -moz-appearance: textfield;
+  /* For Firefox */
 }
 
 
@@ -626,18 +636,21 @@ input[type=number] {
     /* 3 cards per row on larger tablets */
   }
 
-  .chart-card, .info-cards {
+  .chart-card,
+  .info-cards {
     flex: 1 1 100%;
     /* Stack chart and info cards vertically */
     margin-bottom: 15px;
   }
 
-  .transfer-list, .transaction-history {
+  .transfer-list,
+  .transaction-history {
     flex: 1 1 100%;
     /* Stack transfer list and transaction history vertically */
   }
 
-  .pricing-details, .transaction-trend {
+  .pricing-details,
+  .transaction-trend {
     flex: 1 1 100%;
     /* Stack pricing details and transaction trend vertically */
   }
@@ -650,7 +663,9 @@ input[type=number] {
     /* 2 cards per row on smaller screens */
   }
 
-  .top-section, .pricing-trend-section, .transfer-transaction-section {
+  .top-section,
+  .pricing-trend-section,
+  .transfer-transaction-section {
     flex-direction: column;
     /* Stack sections vertically */
   }
@@ -687,10 +702,10 @@ input[type=number] {
     /* Center the button for very small devices */
   }
 
-  .available-dollar-value, .dollar-rate-value {
+  .available-dollar-value,
+  .dollar-rate-value {
     font-size: 20px;
     /* Adjust font sizes for very small screens */
   }
 }
-
 </style>

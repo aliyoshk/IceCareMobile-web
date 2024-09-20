@@ -42,7 +42,6 @@
             <th>Rate</th>
             <th>Amount (Dollar)</th>
             <th>Mode of Payment</th>
-            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -50,9 +49,9 @@
             <td>{{ index + 1 }}</td>
             <td>{{ formatDate(supplier.date) }}</td>
             <td>{{ supplier.name }}</td>
-            <td>{{ formatCurrency(supplier.amount, 'NGN') }}</td>
+            <td id="dollar-amount">{{ formatCurrency(supplier.amount, 'NGN') }}</td>
             <td>{{ supplier.dollarRate }}</td>
-            <td>{{ formatCurrency(supplier.dollarAmount, 'USD') }}</td>
+            <td id="dollar-amount">{{ formatCurrency(supplier.dollarAmount, 'USD') }}</td>
             <td>{{ supplier.modeOfPayment }}</td>
             <td class="view" @click="viewRecord(supplier)">View Details</td>
           </tr>
@@ -81,7 +80,6 @@ import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import imgx from '@/assets/ic_supplier.svg';
 import Spinner from '../components/Spinner.vue';
-import ErrorDialog from '../components/ErrorDialog.vue';
 import SupplierForm from '@/presentation/components/SupplierForm.vue';
 import { getSuppliersUseCase, addSupplierUseCase } from '@/domain/useCases/dashboardUseCase';
 import { supplierRequest } from '../../data/model/supplierRequest';
@@ -106,25 +104,28 @@ const cardsData = [
 ];
 
 const validateFormField = (supplierRequest) => {
+
+  console.log("gfdhdfhghdfbdf", supplierRequest);
+
   if (supplierRequest.name.trim() === '') {
     toast.success('Enter supplier name');
     return false;
-  } else if (supplierRequest.phone.trim() === '') {
+  } else if (supplierRequest.phone === '') {
     toast.success('Enter phone number');
     return false;
   } else if (supplierRequest.modeOfPayment.trim() === '') {
     toast.success('Select mode of payment');
     return false;
-  } else if (supplierRequest.modeOfPayment.trim() === 'Cash' && supplierRequest.totalAmountNaira.trim() === '') {
+  } else if (supplierRequest.modeOfPayment.trim() === 'Cash' && supplierRequest.totalAmountNaira === '') {
     toast.success('Enter the amount');
     return false;
   }else if (supplierRequest.modeOfPayment.trim() === 'Transfer' && (supplierRequest.banks[0].bank === '' || supplierRequest.banks[0].amount === '')) {
     toast.success('Banks record should be filled');
     return false;
-  } else if (supplierRequest.dollarRate.trim() === '') {
+  } else if (supplierRequest.dollarRate === '') {
     toast.success('Enter the dollar rate');
     return false;
-  } else if (supplierRequest.amountDollar.trim() === '') {
+  } else if (supplierRequest.amountDollar === '') {
     toast.success('Enter amount of dollar');
     return false;
   }
@@ -460,5 +461,10 @@ th {
   border-radius: 4px;
   padding: 5px 10px;
   cursor: pointer;
+}
+
+#dollar-amount {
+  color: green;
+  align-content: center;
 }
 </style>

@@ -22,11 +22,16 @@
       </form>
 
       <!-- Display the error message if present -->
-      <ErrorDialog v-if="error" :error="error" @close="clearError" />
+      <!-- <ErrorDialog v-if="error" :error="error" @close="clearError" /> -->
     </div>
 
     <!-- Spinner component -->
     <Spinner :loading="loggingIn" />
+
+
+    <CustomDialog v-if="error" :message="error" :show="error" @confirm="clearError"
+      :success="apiStatus" />
+
   </div>
 </template>
 
@@ -34,14 +39,15 @@
 import { useUserStore } from '../store/userStore';
 import ErrorDialog from '../components/ErrorDialog.vue';
 import Spinner from '../components/Spinner.vue';
+import CustomDialog from '../components/CustomDialog.vue';
 
 export default {
-  components: { ErrorDialog, Spinner },
+  components: { ErrorDialog, Spinner, CustomDialog },
   data() {
     return {
       email: '',
       password: '',
-      loggingIn: false, // State to track whether the login is in progress
+      loggingIn: false
     };
   },
   computed: {
@@ -65,7 +71,7 @@ export default {
         }
       } 
       catch (error) {
-        console.error('Login failed:', error.message);
+        console.error('Logging failed:', error.message);
       } 
       finally {
         this.loggingIn = false;

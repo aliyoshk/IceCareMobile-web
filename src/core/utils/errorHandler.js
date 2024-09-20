@@ -7,6 +7,12 @@
 
 export const handleApiError = (error) => {
   console.error('API Error:', error);
+  console.error('API Error:', error.response);
+  console.error('API Error:', error.response.statusText);
+  
+  if (error.response.statusText) {
+    throw new Error(error.response.statusText + ' (' + error.response.status +')');
+  }
   
   if (error.response) {
     const { data } = error.response;

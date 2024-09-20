@@ -4,88 +4,224 @@
         <section class="header-section">
             <div class="header">
                 <!-- <button class="back-button" @click="goBack">← Back</button> -->
-                <button class="back-button">← Back</button>
+                <button @click="goBack" class="back-button">← Back</button>
                 <h1 class="title">Customer Transfer Details</h1>
             </div>
         </section>
 
-
         <div class="general">
+
             <section class="details-section">
                 <div class="customer-details-card">
                     <div class="details-container">
-                        <h3>Customer Details</h3>
+                        <h3 id="boldText">Customer Details</h3>
                         <hr>
+                        <br>
                         <h5>Name</h5>
                         <div class="name">
-                            <h3>John</h3>
-                            <h3>Doe</h3>
+                            <h3 id="boldText">{{ selectedCustomer.customerName.split(' ')[0] }}</h3>
+                            <h3 id="boldText">{{ selectedCustomer.customerName.split(' ')[1] }}</h3>
                         </div>
-                        <div class="name">
+                        <div class="name" id="spacer">
                             <h5>Email</h5>
                             <h5>Phone Number</h5>
                         </div>
                         <div class="name">
-                            <h3>johndoe@gmail.com</h3>
-                            <h3>08101234567</h3>
+                            <h3 id="boldText">{{ selectedCustomer.customerEmail }}</h3>
+                            <h3 id="boldText">{{ selectedCustomer.phoneNumber }}</h3>
                         </div>
                     </div>
                 </div>
 
                 <div class="customer-details-card">
                     <div class="details-container">
-                        <h3>Customer Details</h3>
+                        <h3 id="boldText">Transaction Details</h3>
                         <hr>
-                        <h5>Name</h5>
+                        <br>
                         <div class="name">
-                            <h3>John</h3>
-                            <h3>Doe</h3>
+                            <h5>Total Amount</h5>
+                            <h5>Dollar Rate</h5>
                         </div>
                         <div class="name">
-                            <h5>Email</h5>
-                            <h5>Phone Number</h5>
+                            <h3 id="boldText">{{ formatCurrency(totalAmount) }}</h3>
+                            <h3 id="boldText">{{ formatCurrency(selectedCustomer.dollarRate) }}</h3>
+                        </div>
+                        <div class="name" id="spacer">
+                            <h5>Transfer Category</h5>
+                            <h5>Dollar Quantity</h5>
                         </div>
                         <div class="name">
-                            <h3>johndoe@gmail.com</h3>
-                            <h3>08101234567</h3>
+                            <h3 id="boldText">{{ selectedCustomer.category }}</h3>
+                            <h3 id="boldText">{{ formatCurrency(selectedCustomer.dollarAmount, 'USD') }}</h3>
                         </div>
                     </div>
                 </div>
+
+                <div class="receipts-card">
+                    <div class="receipts-container">
+                        <h3 id="boldText">Transfer receipt(s)</h3>
+                        <hr />
+                        <br>
+                        <div class="receipt-holder">
+                            <div v-for="(receipt, index) in receipts" :key="index" class="receipt-item">
+                                <img :src="getImage(receipt.receipts)" alt="Receipt Image" class="receipt-image"
+                                    @click="openModal(receipt.receipts)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </section>
 
             <section>
                 <div class="bank-card">
-                    <div class="details-container">
-                        <h3>Bank(s) Involve</h3>
-                        <hr>
-                        <h5>United Bank for Africa</h5>
-                        <h3>Ice Care Nig Ltd</h3>
-                        <h3>012345678</h3>
-                        <h3>350,000</h3>
+                    <div class="bank-container">
+                        <h3 id="boldText">Bank(s) Involve</h3>
+                        <hr />
                         <br>
-                        <h3>Bank(s) Involve</h3>
-                        <hr>
-                        <h5>United Bank for Africa</h5>
-                        <h3>Ice Care Nig Ltd</h3>
-                        <h3>012345678</h3>
-                        <h3>350,000</h3>
-                        <br>
-                        <h3>Bank(s) Involve</h3>
-                        <hr>
-                        <h5>United Bank for Africa</h5>
-                        <h3>Ice Care Nig Ltd</h3>
-                        <h3>012345678</h3>
-                        <h3>350,000</h3>
-                        <br>
+                        <div id="spacer" v-for="(bank, index) in banks" :key="index">
+                            <h5 id="boldText">{{ bank.bankName }}</h5>
+                            <h3>{{ bank.bankName }}</h3>
+                            <h3>{{ bank.bankName }}</h3>
+                            <h3>{{ bank.amountTransferred }}</h3>
+                        </div>
                     </div>
                 </div>
+
+                <button class="btn-approve" @click="approve">Submit</button>
+
             </section>
 
         </div>
 
     </div>
 
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+        <div class="modal-content">
+            <img :src="currentImage" alt="Enlarged Receipt" class="modal-image" />
+        </div>
+    </div>
+
+    <ConfirmDialog v-if="isDialogVisible" :title="dialogTitle" :message="dialogMessage" :show="isDialogVisible"
+        @confirm="handleApprove" @cancel="cancelDialog" />
+
+    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="goBack"
+        :success="apiStatus" />
+
+    <Spinner :loading="loading" />
+
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { formatCurrency, formatDate } from '@/core/utils/helpers';
+import { approveTransfer } from '@/domain/useCases/dashboardUseCase';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
+import CustomDialog from '../components/CustomDialog.vue';
+
+const router = useRouter();
+const route = useRoute();
+const showModal = ref(false);
+const currentImage = ref('');
+const receipts = ref([]);
+const banks = ref([]);
+const totalAmount = ref(0);
+const loading = ref(false);
+const isDialogVisible = ref(false);
+const dialogTitle = ref('');
+const dialogMessage = ref('');
+const responseMessage = ref('')
+const apiStatus = ref(false);
+const showApiDialog = ref(false);
+
+const selectedCustomer = JSON.parse(route.query.selectedCustomer) || [];
+console.log(selectedCustomer);
+
+const approve = () => {
+
+    console.log("Approv clicked");
+
+    dialogTitle.value = 'Approve Transfer';
+    dialogMessage.value = `Proceeding would mark ${selectedCustomer.customerName} transfer as confirmed`;
+    isDialogVisible.value = true;
+};
+
+const cancelDialog = () => {
+    isDialogVisible.value = false;
+    showApiDialog.value = false;
+};
+
+const goBack = () => {
+    router.push({ name: 'Transfer' });
+};
+
+const handleApprove = async () => {
+
+    loading.value = true;
+
+    try {
+        isDialogVisible.value = false;
+        const requestData = {
+            id: selectedCustomer.id,
+            email: selectedCustomer.customerEmail,
+            confirmed: true
+        };
+
+        console.log('This is the content of:', requestData);
+
+        const response = await approveTransfer(requestData);
+
+        console.log('This is the response of:', response);
+
+        if (response.success || response.data.success) {
+            showApiDialog.value = true;
+            apiStatus.value = response.success;
+            responseMessage.value = response.message;
+        }
+    }
+    catch (error) {
+        console.log('The fucking error is:', error);
+        showApiDialog.value = true;
+        apiStatus.value = false;
+        responseMessage.value = error.message;
+    }
+    finally {
+        loading.value = false;
+    }
+};
+
+const fetchData = () => {
+
+    selectedCustomer.transferEvidence.forEach((evidence) => {
+        receipts.value.push(evidence);
+    });
+
+    selectedCustomer.bankDetails.forEach((bankDetail) => {
+        totalAmount.value += bankDetail.amountTransferred;
+        banks.value.push(bankDetail);
+    });
+
+    console.log('Receipts', receipts.value)
+    console.log('Banks', banks.value)
+    console.log('Banks', banks.value.bankName)
+};
+
+const getImage = (receipt) => {
+    return `data:image/jpeg;base64,${receipt}`;
+};
+
+const openModal = (receipt) => {
+    currentImage.value = getImage(receipt);
+    showModal.value = true;
+};
+
+onMounted(() => {
+    fetchData();
+});
+
+</script>
+
 
 
 <style scoped>
@@ -102,6 +238,20 @@
     width: 100vw;
     height: 100vh;
 
+}
+
+h3,
+h5 {
+    font-size: 14px;
+    text-align: left;
+}
+
+#boldText {
+    font-weight: bold;
+}
+
+#spacer {
+    padding-top: 10px;
 }
 
 .header-section {
@@ -146,7 +296,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 1px;
 }
 
 .customer-details-card {
@@ -160,9 +310,10 @@
 }
 
 .details-container {
+    margin: 5px;
     background-color: #f9f9f9;
     padding: 15px;
-    margin: 5px;
+    width: 270px;
 }
 
 .bank-card {
@@ -173,13 +324,100 @@
     padding: 5px;
 }
 
-.details-container {
-    margin: 2px;
+.bank-container {
+    margin: 5px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    width: 270px;
+    height: 50vh;
+    overflow-x: auto;
+}
+
+.receipts-card {
+    background-color: #FCF3F4;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    margin-bottom: 15px;
+    width: 92%;
+    height: 40vh;
+}
+
+.receipts-container {
+    background-color: #f9f9f9;
+    padding: 15px;
+    margin: 5px;
+    height: 95%;
+    overflow-x: auto;
+}
+
+.receipt-holder {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.receipt-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.receipt-item {
+    flex: 1 1 auto;
+    max-width: 150px;
+    box-sizing: border-box;
 }
 
 .name {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+}
+
+.btn-approve {
+    background-color: #B6720F;
+    color: white;
+    border: none;
+    padding: 10px 40%;
+    cursor: pointer;
+    margin-top: 40%;
+}
+
+.btn-approve:hover {
+    background-color: maroon;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 40%;
+    max-height: 80%;
+    overflow: auto;
+}
+
+.modal-image {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.receipt-image {
+    width: 100%;
+    cursor: pointer;
+    object-fit: fill;
+    max-height: 70%;
 }
 </style>

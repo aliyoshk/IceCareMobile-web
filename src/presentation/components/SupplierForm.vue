@@ -28,8 +28,16 @@
       <div class="form-item" v-if="supplier.modeOfPayment === 'Transfer'">
         <label for="banks">Banks</label>
         <div v-for="(bank, index) in supplier.banks" :key="index" class="bank-item">
-          <input type="text" v-model="bank.name" placeholder="Bank Name" />
-          <input type="number" v-model="bank.amount" placeholder="Amount" />
+          <div class="dropdown-container">
+            <select v-model="bank.name">
+              <option value="">Select Bank</option>
+              <option v-for="bankOption in banks" :key="bankOption.name" :value="bankOption.name">
+                {{ bankOption.name }}
+              </option>
+            </select>
+            <span class="dropdown-icon">&#9662;</span>
+          </div>
+          <input type="number" v-model="bank.amount" placeholder="Amount" required />
           <span class="remove-bank" @click="removeBank(index)">&#x2715;</span>
         </div>
         <div class="add-bank-container">
@@ -37,11 +45,23 @@
         </div>
       </div>
 
+      <!-- <div class="form-item" v-if="supplier.modeOfPayment === 'Transfer'">
+        <label for="banks">Banks</label>
+        <div v-for="(bank, index) in supplier.banks" :key="index" class="bank-item">
+          <input type="text" v-model="bank.name" placeholder="Bank Name" />
+          <input type="number" v-model="bank.amount" placeholder="Amount" />
+          <span class="remove-bank" @click="removeBank(index)">&#x2715;</span>
+        </div>
+        <div class="add-bank-container">
+          <span class="add-bank" @click="addBank">Add another bank</span>
+        </div>
+      </div> -->
+
       <div class="form-item horizontal-group">
         <div class="form-item-wrapper">
           <label for="total-amount-naira">Total Amount (Naira)</label>
           <input type="number" id="total-amount-naira" v-model="supplier.totalAmountNaira"
-            placeholder="Enter total amount in Naira" :disabled="shouldDisableTotalAmount" value=""/>
+            placeholder="Enter total amount in Naira" :disabled="shouldDisableTotalAmount" value="" />
         </div>
         <div class="form-item-wrapper">
           <label for="balance">Balance</label>
@@ -56,7 +76,8 @@
         </div>
         <div class="form-item-wrapper">
           <label for="amount-dollar">Amount in Dollar</label>
-          <input type="number" id="amount-dollar" v-model="supplier.amountDollar" placeholder="Enter amount in Dollar" />
+          <input type="number" id="amount-dollar" v-model="supplier.amountDollar"
+            placeholder="Enter amount in Dollar" />
         </div>
       </div>
 
@@ -81,12 +102,23 @@ export default {
         balance: '',
         dollarRate: '',
         amountDollar: ''
-      }
+      },
+      banks: [
+        { name: 'Wema Bank' },
+        { name: 'Jaiz Bank' },
+        { name: 'Union Bank' },
+        { name: 'UBA Bank' }
+      ],
     };
   },
   methods: {
     addBank() {
-      this.supplier.banks.push({ name: '', amount: '' });
+      //this.supplier.banks.push({ name: '', amount: '' });
+      if (this.supplier.banks.every(bank => bank.name.trim() !== '' && bank.amount !== '')) {
+        this.supplier.banks.push({ name: '', amount: '' });
+      } else {
+        alert('Please fill details for existing banks before adding a new one.');
+      }
     },
     removeBank(index) {
       this.supplier.banks.splice(index, 1);
@@ -102,7 +134,7 @@ export default {
     shouldDisableTotalAmount() {
       this.supplier.totalAmountNaira = "";
       return this.supplier.modeOfPayment === 'Transfer' && (
-        !this.supplier.banks.every(bank => bank.name.trim() !== '' && bank.amount.trim() !== '')
+        !this.supplier.banks.every(bank => bank.name.trim() !== '' && bank.amount !== '')
       );
     }
   }
@@ -118,9 +150,7 @@ export default {
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   max-height: 80vh;
-  /* Limit the form height */
   overflow-y: auto;
-  /* Enable vertical scrolling */
 }
 
 .supplier-form h2 {
@@ -161,13 +191,12 @@ export default {
 
 .dropdown-container {
   position: relative;
+  flex: 1;
 }
 
 .dropdown-container select {
   appearance: none;
-  /* Remove default styling */
   background-color: white;
-  /* Match background color */
 }
 
 .dropdown-icon {
@@ -204,7 +233,6 @@ export default {
 
 .add-bank {
   color: #e64d4d;
-  /* Maroon color */
   cursor: pointer;
   font-size: 16px;
   text-align: center;
@@ -233,11 +261,12 @@ export default {
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 input[type=number] {
-    -moz-appearance: textfield; /* For Firefox */
+  -moz-appearance: textfield;
+  /* For Firefox */
 }
 </style>
