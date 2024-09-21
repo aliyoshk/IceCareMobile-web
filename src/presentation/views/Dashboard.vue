@@ -174,7 +174,7 @@ const barChartOptions = ref({
       font: {
         size: 18,
         weight: 'bold'
-      }
+      },
     },
   },
 });
@@ -265,10 +265,8 @@ const onMountedHandler = async () => {
     const dashboardData = await fetchDashboardDataUseCase();
     console.log('Dashboard data:', dashboardData);
 
+    localStorageSource.savedDashboardData(dashboardData.data);
     store.setName(dashboardData.data.adminName);
-    localStorageSource.savedAdminName(dashboardData.data.adminName);
-    localStorageSource.savedDollarRate(dashboardData.data.dollarRate);
-    localStorageSource.savedAvailableDollar(dashboardData.data.availableDollarAmount);
 
     metrics.value = dashboardData.metrics || [
       { title: 'All Time Earnings', value: formatCurrency(dashboardData.data.totalTransferredAmount.toLocaleString()) || '0', icon: ic_image },
@@ -384,8 +382,8 @@ const onMountedHandler = async () => {
 }
 
 .chart-container {
-  padding: 15px 0;
-  height: calc(100% - 10px);
+  padding: 0px 0;
+  height: calc(100% - 5px);
 }
 
 .info-cards {

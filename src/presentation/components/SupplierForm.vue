@@ -121,7 +121,9 @@ export default {
       }
     },
     removeBank(index) {
-      this.supplier.banks.splice(index, 1);
+      if (this.supplier.banks.length > 1) {
+        this.supplier.banks.splice(index, 1);
+      }
     },
     submitForm() {
       this.$emit('formSubmitted', this.supplier);

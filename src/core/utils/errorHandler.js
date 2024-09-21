@@ -10,10 +10,6 @@ export const handleApiError = (error) => {
   console.error('API Error:', error.response);
   console.error('API Error:', error.response.statusText);
   
-  if (error.response.statusText) {
-    throw new Error(error.response.statusText + ' (' + error.response.status +')');
-  }
-  
   if (error.response) {
     const { data } = error.response;
     console.error('API Error Response Data:', data);
@@ -23,5 +19,7 @@ export const handleApiError = (error) => {
     console.error('API Error Message:', error.message);
   }
 
-  throw new Error(error.response?.data?.message || error.message || 'An unknown error occurred');
+  console.error('API Error statusText:', error.response.statusText);
+
+  throw new Error(error.response?.data?.message || error.message || error.response.statusText ||'An unknown error occurred');
 };

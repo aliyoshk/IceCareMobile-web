@@ -4,18 +4,32 @@
     <div class="form-content">
       <div class="form-item">
         <label for="name">Customer Name</label>
-        <input type="text" id="name" v-model="customer.name" placeholder="Enter customer name" />
+        <input type="text" id="name" v-model="customer.name" placeholder="Enter customer name"/>
+      </div>
+
+      <div class="form-item">
+        <label for="phone">Phone Number</label>
+        <input type="number" id="phone" v-model="customer.phone" placeholder="Enter phone number" />
       </div>
 
       <div class="form-item horizontal-group">
+
         <div class="form-item-wrapper">
-          <label for="phone">Phone Number</label>
-          <input type="number" id="phone" v-model="customer.phone" placeholder="Enter phone number" />
+          <label for="paymentCurrency">Payment Currency</label>
+          <div class="dropdown-container">
+            <select id="paymentCurrency" v-model="customer.paymentCurrency">
+              <option value="">Select Currency</option>
+              <option value="Naira">Naira(₦)</option>
+              <option value="Dollar">Dollar($)</option>
+            </select>
+            <span class="dropdown-icon">&#9662;</span>
+          </div>
         </div>
+
         <div class="form-item-wrapper">
           <label for="payment">Mode of Payment</label>
           <div class="dropdown-container">
-            <select id="payment" v-model="customer.modeOfPayment">
+            <select id="payment" v-model="customer.modeOfPayment" :disabled="shouldDisableTransferOption">
               <option value="">Select Mode</option>
               <option value="Cash">Cash</option>
               <option value="Transfer">Transfer</option>
@@ -25,7 +39,28 @@
         </div>
       </div>
 
+
       <div class="form-item" v-if="customer.modeOfPayment === 'Transfer'">
+        <label for="banks">Banks</label>
+        <div v-for="(bank, index) in customer.banks" :key="index" class="bank-item">
+          <div class="dropdown-container">
+            <select v-model="bank.name">
+              <option value="">Select Bank</option>
+              <option v-for="bankOption in banks" :key="bankOption.name" :value="bankOption.name">
+                {{ bankOption.name }}
+              </option>
+            </select>
+            <span class="dropdown-icon">&#9662;</span>
+          </div>
+          <input type="number" v-model="bank.amount" placeholder="Amount" required />
+          <span class="remove-bank" @click="removeBank(index)">&#x2715;</span>
+        </div>
+        <div class="add-bank-container">
+          <span class="add-bank" @click="addBank">Add another bank</span>
+        </div>
+      </div>
+
+      <!-- <div class="form-item" v-if="customer.modeOfPayment === 'Transfer'">
         <label for="banks">Banks</label>
         <div v-for="(bank, index) in customer.banks" :key="index" class="bank-item">
           <input type="text" v-model="bank.name" placeholder="Bank Name" />
@@ -35,7 +70,7 @@
         <div class="add-bank-container">
           <span class="add-bank" @click="addBank">Add another bank</span>
         </div>
-      </div>
+      </div> -->
 
       <div class="form-item horizontal-group">
         <div class="form-item-wrapper">
@@ -44,7 +79,7 @@
             placeholder="Enter total amount in Naira" :disabled="shouldDisableTotalAmount" />
         </div>
         <div class="form-item-wrapper">
-          <label for="balance">Balance</label>
+          <label for="balance">Balance (if any)</label>
           <input type="number" id="balance" v-model="customer.balance" placeholder="Enter balance" />
         </div>
       </div>
@@ -55,8 +90,9 @@
           <input type="number" id="dollar-rate" v-model="customer.dollarRate" placeholder="Enter dollar rate" />
         </div>
         <div class="form-item-wrapper">
-          <label for="amount-dollar">Amount in Dollar</label>
-          <input type="number" id="amount-dollar" v-model="customer.amountDollar" placeholder="Enter amount in Dollar" />
+          <label for="amount-dollar">Amount (Dollar)</label>
+          <input type="number" id="amount-dollar" v-model="customer.amountDollar"
+            placeholder="Enter amount in Dollar" />
         </div>
       </div>
 
@@ -75,13 +111,20 @@ export default {
       customer: {
         name: '',
         phone: '',
+        paymentCurrency: '',
         modeOfPayment: '',
         banks: [{ name: '', amount: '' }],
         totalAmountNaira: '',
         balance: '',
         dollarRate: '',
         amountDollar: ''
-      }
+      },
+      banks: [
+        { name: 'Wema Bank' },
+        { name: 'Jaiz Bank' },
+        { name: 'Union Bank' },
+        { name: 'UBA Bank' }
+      ],
     };
   },
   methods: {
@@ -89,7 +132,9 @@ export default {
       this.customer.banks.push({ name: '', amount: '' });
     },
     removeBank(index) {
-      this.customer.banks.splice(index, 1);
+      if (this.customer.banks.length > 1) {
+        this.customer.banks.splice(index, 1);
+      } 
     },
     submitForm() {
       this.$emit('formSubmitted', this.customer);
@@ -102,8 +147,14 @@ export default {
     shouldDisableTotalAmount() {
       this.customer.totalAmountNaira = '';
       return this.customer.modeOfPayment === 'Transfer' && (
-        !this.customer.banks.every(bank => bank.name.trim() !== '' && bank.amount.trim() !== '')
+        !this.customer.banks.every(bank => bank.name.trim() !== '' && bank.amount !== '')
       );
+    },
+    shouldDisableTransferOption() {
+      if (this.customer.paymentCurrency === 'Dollar') {
+        this.customer.modeOfPayment = 'Cash';
+      }
+      return this.customer.paymentCurrency === 'Dollar';
     }
   }
 };
@@ -161,6 +212,7 @@ export default {
 
 .dropdown-container {
   position: relative;
+  flex: 1;
 }
 
 .dropdown-container select {
@@ -228,7 +280,7 @@ export default {
 }
 
 .form-actions button:hover {
-  background-color: #0056b3;
+  background-color: #6e4302;
 }
 
 input[type=number]::-webkit-inner-spin-button,

@@ -9,34 +9,14 @@ export const localStorageSource = {
       localStorage.removeItem('user');
     },
 
-    savedAdminName(adminName){
-      localStorage.setItem('admin', JSON.stringify(adminName));
+    savedDashboardData(dashboardResponse) {
+      localStorage.setItem('dashboardData', JSON.stringify(dashboardResponse));
     },
-    getAdminName(){
-      return JSON.parse(localStorage.getItem('admin'));
+    getDashboardData() {
+      return JSON.parse(localStorage.getItem('dashboardData'));
     },
-    clearAdminName(){
-      localStorage.removeItem('admin');
-    },
-
-    savedDollarRate(dollarRate){
-      localStorage.setItem('dollar', JSON.stringify(dollarRate));
-    },
-    getDollarRate(){
-      return JSON.parse(localStorage.getItem('dollar'));
-    },
-    clearDollarRate(){
-      localStorage.removeItem('dollar');
-    },
-
-    savedAvailableDollar(availableDollar){
-      localStorage.setItem('availableDollar', JSON.stringify(availableDollar));
-    },
-    getAvailableDollar(){
-      return JSON.parse(localStorage.getItem('availableDollar'));
-    },
-    clearAvailableDollar(){
-      localStorage.removeItem('availableDollar');
+    clearDashboardData() {
+      localStorage.removeItem('dashboardData');
     },
   };
   

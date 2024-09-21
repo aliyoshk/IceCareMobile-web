@@ -54,8 +54,13 @@
           <span>Hi, {{ adminName }}</span>
         </div>
         <div class="actions">
-          <button class="dropdown">Dropdown</button>
-          <button class="icon">Icon</button>
+          <img src="@/assets/ic_account.svg">
+          <span class="dropdown-icon" @click="showDropdown = !showDropdown;">&#9662;</span>
+          <ul v-if="showDropdown" class="dropdown-options">
+            <li>
+              <a @click="logout">Logout</a>
+            </li>
+          </ul>
         </div>
       </header>
 
@@ -81,30 +86,47 @@
 </template>
 
 <script>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { storesManager } from '@/presentation/store/userStore';
 import { localStorageSource } from '@/data/sources/localStorage';
+import { useUserStore } from '@/presentation/store/userStore';
 
 
 export default {
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const adminStore = storesManager();
-
-    console.log('app.vuestored admin name:', adminStore.name);
+    const showDropdown = ref(false);
+    const userStore = useUserStore();
 
     const isLoginRoute = computed(() => route.path === '/login');
     const isRegistrationRoute = computed(() => route.path === '/registration');
     const isTransferRoute = computed(() => route.path === '/transfer')
     const isTransferDetailsRoute = computed(() => route.path === '/transfer-details');
 
+
+    console.log('app.vuestored admin name:', adminStore?.name);
+    console.log('local storage admin name:', localStorageSource.getDashboardData()?.adminName);
+
+
+    const logout = () => {
+      userStore.logout();
+      showDropdown.value = false;
+      router.go();
+    };
+    
+
     return {
       isLoginRoute,
       isRegistrationRoute,
       isTransferRoute,
       isTransferDetailsRoute,
-      adminName: computed(() => localStorageSource.getAdminName() ?? adminStore.name)
+      adminName: computed(() => localStorageSource.getDashboardData()?.adminName ?? adminStore.name),
+      showDropdown,
+      logout,
     };
   }
 };
@@ -237,6 +259,7 @@ h4 {
 }
 
 header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -256,16 +279,33 @@ header {
   gap: 10px;
 }
 
-.dropdown,
-.icon {
-  padding: 8px 16px;
-  background-color: #42A5F5;
-  color: white;
-  border: none;
-  border-radius: 4px;
+.dropdown-icon {
+  font-size: 16px;
+  color: black;
   cursor: pointer;
 }
 
+.dropdown-options {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  cursor:pointer;
+}
 
+.dropdown-options li {
+  padding: 10px; /* Add padding to items */
+}
+
+.dropdown-options li a {
+  text-decoration: none; /* Remove underline */
+  color: black; /* Set text color */
+  display: block; /* Make the whole area clickable */
+}
+
+.dropdown-options li a:hover {
+  background-color: #f0f0f0; /* Highlight on hover */
+}
 
 </style>

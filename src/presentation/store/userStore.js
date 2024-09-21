@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { loginUseCase } from '../../domain/useCases/loginUseCase';
+import { localStorageSource } from '@/data/sources/localStorage';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -30,10 +31,7 @@ export const useUserStore = defineStore('user', {
       this.user = null;
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
-      localStorageSource.clearUserData();
-      localStorageSource.clearAdminName();
-      localStorageSource.clearDollarRate();
-      localStorageSource.clearAvailableDollar();
+      localStorageSource.clearDashboardData();
     },
     clearError() {
       this.error = null;

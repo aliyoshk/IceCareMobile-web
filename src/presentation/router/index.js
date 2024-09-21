@@ -24,6 +24,7 @@ const routes = [
   { path: '/transfer', name: 'Transfer', component: Transfer, meta: { requiresAuth: true } },
   { path: '/admin-panel', name: 'AdminPanel', component: AdminPanel, meta: { requiresAuth: true } },
   { path: '/transfer-details', name: 'TransferDetails', component: TransferDetails, meta: { requiresAuth: true } },
+  
   { path: '/', redirect: '/login' }
 ];
 

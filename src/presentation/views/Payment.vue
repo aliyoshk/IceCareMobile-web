@@ -23,6 +23,8 @@
         <h2>Payments History</h2>
         <div class="search-add-container">
           <input type="text" v-model="searchQuery" placeholder="Search..." />
+          <button @click="exportToPDF">Export as PDF</button>
+          <button @click="exportToExcel">Export as Excel</button>
           <button @click="addPayment">Add Record</button>
         </div>
       </div>
@@ -55,6 +57,9 @@
 
     <Spinner :loading="loading" />
 
+    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
+      :success="apiStatus" />
+
   </div>
 </template>
 
@@ -72,6 +77,9 @@ import { getPaymentsUseCase, addPaymentUseCase } from '@/domain/useCases/dashboa
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import PaymentForm from '@/presentation/components/PaymentForm.vue';
 import { localStorageSource } from '@/data/sources/localStorage';
+import CustomDialog from '../components/CustomDialog.vue';
+import { exportPDF } from '@/core/utils/exportToPDF';
+import { exportExcel } from '@/core/utils/exportToExcel';
 
 const loading = ref(false);
 const showForm = ref(false);
@@ -82,6 +90,9 @@ const getPaymentResponse = ref([]);
 const totalRecord = ref(0);
 const transactionVolume = ref(0);
 const totalTransaction = ref(0);
+const responseMessage = ref('')
+const apiStatus = ref(false);
+const showApiDialog = ref(false);
 
 const cardsData = [
   { image: imgx, title: 'Total No of Customers', value: totalRecord },
@@ -126,7 +137,9 @@ const onMountedHandler = async () => {
   }
   catch (error) {
     getPaymentResponse.value = [];
-    alert(error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
   }
   finally {
     loading.value = false;
@@ -174,21 +187,46 @@ const handleFormSubmission = async (paymentRequest) => {
 
     console.log('This is the response of:', response);
 
-    if (response.data.success) {
-      alert(response.message || "Record added Successful")
+    if (response.success || response.data.success) {
       isPaymentAdded.value = true;
-    }
 
+      showApiDialog.value = true;
+      apiStatus.value = response.success;
+      responseMessage.value = response.message || "Record added Successful";
+    }
   }
   catch (error) {
-    console.log('Error occurred:', error.message);
-    alert(error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
   }
 };
 
 const deleteRecord = (payment) => {
   console.log('Viewing record for:', payment);
   toast.success('Delete clicked on: ' + payment.id + '-:-' + payment.customerName);
+};
+
+const done = () => {
+  showApiDialog.value = false;
+};
+
+const columns = ['#', 'Transaction Date', 'Customer Name', 'Amount($)'];
+const rows = computed(() =>
+  filteredPayments.value.map((payment, index) => [
+    index + 1,
+    formatDate(payment.date),
+    payment.customerName,
+    formatCurrency(payment.dollarAmount, 'USD')
+  ])
+);
+
+const exportToPDF = () => {
+  exportPDF(columns, rows.value, 'Payments History');
+};
+
+const exportToExcel = () => {
+  exportExcel(columns, rows.value, 'Payments History');
 };
 
 </script>
@@ -339,14 +377,14 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #452900;
 }
 
 table,
 .table-header {
   width: 100%;
   border-collapse: collapse;
-  background-color: beige;
+  background-color: white;
 }
 
 th,

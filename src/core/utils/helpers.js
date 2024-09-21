@@ -20,3 +20,13 @@ export function formatCurrency(amount, currency = 'NGN') {
 
   return symbol[currency] + formattedAmount;
 }
+
+export function isValidEmail(email) {
+    const emailRegex = /^[a-zA-Z0-9.%+-]+@[a-zA-Z0-9.-]+[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+}
+
+export function IsValidPhoneNumber(phoneNumber) {
+    const phoneRegex = /^(\d{11})$/;
+    return phoneRegex.test(phoneNumber);
+}

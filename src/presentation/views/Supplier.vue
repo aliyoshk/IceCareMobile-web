@@ -10,15 +10,14 @@
       </div>
 
       <div class="card large-card" v-if="cardsData.length > 3">
-        <img :src="cardsData[3].image" alt="Card Image" class="card-image" />
         <div class="content">
           <div class="content-item">
             <h3>Total Amount($)</h3>
-            <span>{{ formatCurrency(cardsData[3].value, 'USD') }}</span>
+            <span>{{ cardsData[3].value }}</span>
           </div>
           <div class="content-item">
-            <h3>Total Amount(N)</h3>
-            <span>{{ formatCurrency(cardsData[3].additionalValue, 'NGN') }}</span>
+            <h3>Total Amount(₦)</h3>
+            <span>{{ cardsData[3].additionalValue }}</span>
           </div>
         </div>
       </div>
@@ -29,6 +28,8 @@
         <h2>Suppliers History</h2>
         <div class="search-add-container">
           <input type="text" v-model="searchQuery" placeholder="Search..." />
+          <button @click="exportToPDF">Export as PDF</button>
+          <button @click="exportToExcel">Export as Excel</button>
           <button @click="addSupplier">Add Supplier</button>
         </div>
       </div>
@@ -49,9 +50,9 @@
             <td>{{ index + 1 }}</td>
             <td>{{ formatDate(supplier.date) }}</td>
             <td>{{ supplier.name }}</td>
-            <td id="dollar-amount">{{ formatCurrency(supplier.amount, 'NGN') }}</td>
+            <td>{{ formatCurrency(supplier.amount, 'NGN') }}</td>
             <td>{{ supplier.dollarRate }}</td>
-            <td id="dollar-amount">{{ formatCurrency(supplier.dollarAmount, 'USD') }}</td>
+            <td>{{ formatCurrency(supplier.dollarAmount, 'USD') }}</td>
             <td>{{ supplier.modeOfPayment }}</td>
             <td class="view" @click="viewRecord(supplier)">View Details</td>
           </tr>
@@ -70,6 +71,9 @@
     <!-- <Spinner v-if="!loading" /> -->
     <Spinner :loading="loading" />
 
+    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
+      :success="apiStatus" />
+
   </div>
 </template>
 
@@ -78,12 +82,16 @@ import { ref, computed, onMounted, watchEffect } from 'vue';
 import { supplierData } from '@/data/mockData/supplierData';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
-import imgx from '@/assets/ic_supplier.svg';
 import Spinner from '../components/Spinner.vue';
 import SupplierForm from '@/presentation/components/SupplierForm.vue';
 import { getSuppliersUseCase, addSupplierUseCase } from '@/domain/useCases/dashboardUseCase';
 import { supplierRequest } from '../../data/model/supplierRequest';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
+import CustomDialog from '../components/CustomDialog.vue';
+import { exportPDF } from '@/core/utils/exportToPDF';
+import { exportExcel } from '@/core/utils/exportToExcel';
+import signal from '@/assets/ic_signal.svg';
+import naira from '@/assets/ic_naira.svg';
 
 
 const showForm = ref(false);
@@ -95,17 +103,32 @@ const isSupplierAdded = ref(false);
 const totalAmount = ref('');
 const totalDollar = ref('');
 const totalSuppliers = ref('');
+const errorMessage = ref('');
+const responseMessage = ref('')
+const apiStatus = ref(false);
+const showApiDialog = ref(false);
+
 
 const cardsData = [
-  { image: imgx, title: 'Total No of Suppliers', value: totalSuppliers || '' },
-  { image: imgx, title: 'Transaction Count', value: totalSuppliers || '' },
-  { image: imgx, title: 'Transaction Volume', value: totalAmount || '' },
-  { image: imgx, title: 'Dollar Rate', value: '8,543', additionalValue: '13,668,800' }
+  { image: signal, title: 'Total No of Suppliers', value: totalSuppliers || '0' },
+  { image: signal, title: 'Transaction Count', value: totalSuppliers || '0' },
+  { image: naira, title: 'Transaction Volume', value: totalAmount },
+  { image: '', title: 'Dollar Rate', value: totalDollar, additionalValue: totalAmount}
 ];
 
 const validateFormField = (supplierRequest) => {
 
-  console.log("gfdhdfhghdfbdf", supplierRequest);
+  errorMessage.value = '';
+  supplierRequest.banks.forEach(bank => {
+    if (bank.name === '') {
+      errorMessage.value = 'Bank name should be filled';
+      return;
+    }
+    if (bank.amount <= 0) {
+      errorMessage.value = 'Bank amount should be greather than 0';
+      return;
+    }
+  });
 
   if (supplierRequest.name.trim() === '') {
     toast.success('Enter supplier name');
@@ -119,8 +142,8 @@ const validateFormField = (supplierRequest) => {
   } else if (supplierRequest.modeOfPayment.trim() === 'Cash' && supplierRequest.totalAmountNaira === '') {
     toast.success('Enter the amount');
     return false;
-  }else if (supplierRequest.modeOfPayment.trim() === 'Transfer' && (supplierRequest.banks[0].bank === '' || supplierRequest.banks[0].amount === '')) {
-    toast.success('Banks record should be filled');
+  } else if (supplierRequest.modeOfPayment.trim() === 'Transfer' && errorMessage.value !== '') {
+    toast.success(errorMessage.value);
     return false;
   } else if (supplierRequest.dollarRate === '') {
     toast.success('Enter the dollar rate');
@@ -130,7 +153,7 @@ const validateFormField = (supplierRequest) => {
     return false;
   }
 
-  return true;
+  return true; ``
 };
 
 const handleFormSubmission = async (supplierRequest) => {
@@ -146,17 +169,17 @@ const handleFormSubmission = async (supplierRequest) => {
 
     const banksData = supplierRequest.banks.map(bank => ({
       bankName: bank.name,
-      amountTransferred: bank.amount
+      amountTransferred: bank.amount || ''
     }));
 
     const supplierRequestData = {
       name: supplierRequest.name,
-      phoneNumber: supplierRequest.phone,
+      phoneNumber: supplierRequest.phone.toString(),
       modeOfPayment: supplierRequest.modeOfPayment,
       banks: banksData,
       dollarRate: supplierRequest.dollarRate,
       dollarAmount: supplierRequest.amountDollar,
-      amount: supplierRequest.totalAmountNaira,
+      amount: supplierRequest.totalAmountNaira || 0.00,
       channel: 'Web'
     };
 
@@ -166,13 +189,21 @@ const handleFormSubmission = async (supplierRequest) => {
 
     if (response.success) {
       isSupplierAdded.value = true;
-      alert(response.message || "Record added successful");
+
+      showApiDialog.value = true;
+      apiStatus.value = response.success;
+      responseMessage.value = response.message;
     }
   }
   catch (error) {
-    console.log('Error occurred:', error.message);
-    alert('Error occurred:', error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
   }
+};
+
+const done = () => {
+  showApiDialog.value = false;
 };
 
 const viewRecord = (supplier) => {
@@ -211,18 +242,42 @@ const onMountedHandler = async () => {
     console.log('Suppliers record:', response.data);
     suppliers.value = response.data.suppliers;
 
-    totalAmount.value = response.data.totalNairaAmount;
-    totalDollar.value = response.data.totalDollarAmount;
+    totalAmount.value = formatCurrency(response.data.totalNairaAmount);
+    totalDollar.value = formatCurrency(response.data.totalDollarAmount, 'USD');
     totalSuppliers.value = response.data.totalSuppliers;
   }
   catch (error) {
-    console.log('Error occurred:', error.message);
-    alert('Error occurred:', error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
   }
   finally {
     loading.value = false;
   }
 };
+
+
+const columns = ['#', 'Date', 'Customer Name', 'Amount(Naira)', 'Rate', 'Amount(Dollar)', 'Mode of Payment'];
+const rows = computed(() =>
+  filteredSuppliers.value.map((supplier, index) => [
+    index + 1,
+    formatDate(supplier.date),
+    supplier.name,
+    "#"+supplier.amount,
+    supplier.dollarRate,
+    formatCurrency(supplier.dollarAmount, 'USD'),
+    supplier.modeOfPayment,
+  ])
+);
+
+const exportToPDF = () => {
+  exportPDF(columns, rows.value, 'Suppliers History');
+};
+
+const exportToExcel = () => {
+  exportExcel(columns, rows.value, 'Suppliers History');
+};
+
 
 </script>
 
@@ -300,13 +355,16 @@ const onMountedHandler = async () => {
   width: calc(100% - 420px);
   height: 90px;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
   margin-left: 100px;
+
 }
 
 .large-card .content {
+  flex: 1;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 1200px) {
@@ -393,19 +451,20 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #452900;
 }
 
 table,
 .table-header {
   width: 100%;
   border-collapse: collapse;
-  background-color: beige;
+  background-color: #FFFFFF;
 }
 
 th,
 td {
-  padding: 14px;
+  padding: 15px;
+  margin: 15px;
   text-align: center;
   border: none;
   font-family: 'Inter', sans-serif;
@@ -463,8 +522,4 @@ th {
   cursor: pointer;
 }
 
-#dollar-amount {
-  color: green;
-  align-content: center;
-}
 </style>

@@ -10,15 +10,14 @@
       </div>
 
       <div class="card large-card" v-if="cardsData.length > 3">
-        <img :src="cardsData[3].image" alt="Card Image" class="card-image" />
         <div class="content">
           <div class="content-item">
             <h3>Total Amount($)</h3>
-            <span>{{ formatCurrency(cardsData[3].value, 'USD') }}</span>
+            <span>{{ cardsData[3].value }}</span>
           </div>
           <div class="content-item">
-            <h3>Total Amount(N)</h3>
-            <span>{{ formatCurrency(cardsData[3].additionalValue, 'NGN') }}</span>
+            <h3>Total Amount(₦)</h3>
+            <span>{{ cardsData[3].additionalValue }}</span>
           </div>
         </div>
       </div>
@@ -29,6 +28,8 @@
         <h2>Customer History</h2>
         <div class="search-add-container">
           <input type="text" v-model="searchQuery" placeholder="Search..." />
+          <button @click="exportToPDF">Export as PDF</button>
+          <button @click="exportToExcel">Export as Excel</button>
           <button @click="addCustomer">Add Customer</button>
         </div>
       </div>
@@ -69,6 +70,9 @@
 
     <Spinner :loading="loading" />
 
+    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
+      :success="apiStatus" />
+
   </div>
 </template>
 
@@ -76,7 +80,6 @@
 
 <script setup>
 import { ref, computed, onMounted, watchEffect } from 'vue';
-import imgx from '@/assets/ic_supplier.svg';
 import { customerData } from '@/data/mockData/customerData';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
@@ -85,6 +88,11 @@ import { getCustomersUseCase, addCustomerUseCase } from '@/domain/useCases/dashb
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import CustomerForm from '@/presentation/components/CustomerForm.vue';
 import { localStorageSource } from '@/data/sources/localStorage';
+import CustomDialog from '../components/CustomDialog.vue';
+import { exportPDF } from '@/core/utils/exportToPDF';
+import { exportExcel } from '@/core/utils/exportToExcel';
+import signal from '@/assets/ic_signal.svg';
+import naira from '@/assets/ic_naira.svg';
 
 const loading = ref(false);
 const showForm = ref(false);
@@ -92,12 +100,19 @@ const toast = useToast();
 const searchQuery = ref('');
 const customers = ref(customerData);
 const isCustomerAdded = ref(false);
+const totalAmount = ref('');
+const totalDollar = ref('');
+const totalCustomers = ref('');
+const errorMessage = ref('');
+const responseMessage = ref('')
+const apiStatus = ref(false);
+const showApiDialog = ref(false);
 
 const cardsData = [
-  { image: imgx, title: 'Total No of Customers', value: '25' },
-  { image: imgx, title: 'Transaction Count', value: '20' },
-  { image: imgx, title: 'Transaction Volume', value: 'N35,000.40' },
-  { image: imgx, title: 'Dollar Rate', value: '8,543', additionalValue: '13,668,800' }
+  { image: signal, title: 'Total No of Customers', value: totalCustomers },
+  { image: signal, title: 'Transaction Count', value: totalCustomers },
+  { image: naira, title: 'Transaction Volume', value: totalAmount },
+  { image: naira, title: 'Dollar Rate', value: totalDollar, additionalValue: totalAmount }
 ];
 
 
@@ -118,6 +133,9 @@ const addCustomer = () => {
   showForm.value = true;
 };
 
+const done = () => {
+  showApiDialog.value = false;
+};
 
 watchEffect(() => {
   if (isCustomerAdded.value === true) {
@@ -137,10 +155,16 @@ const onMountedHandler = async () => {
   try {
     const response = await getCustomersUseCase();
     console.log('Customers record:', response.data);
+
     customers.value = response.data.customers;
+    totalAmount.value = formatCurrency(response.data.totalNairaAmount);
+    totalDollar.value = formatCurrency(response.data.totalDollarAmount, 'USD');
+    totalCustomers.value = response.data.totalCustomers;
   }
   catch (error) {
-    alert(error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
   }
   finally {
     loading.value = false;
@@ -148,25 +172,41 @@ const onMountedHandler = async () => {
 };
 
 const validateFormField = (customerRequest) => {
+  
+  errorMessage.value = '';
+  customerRequest.banks.forEach(bank => {
+    if (bank.name === '') {
+      errorMessage.value = 'Bank name should be filled';
+      return;
+    }
+    if (bank.amount <= 0) {
+      errorMessage.value = 'Bank amount should be greather than 0';
+      return;
+    }
+  });
+
   if (customerRequest.name.trim() === '') {
     toast.success('Enter supplier name');
     return false;
-  } else if (customerRequest.phone.trim() === '') {
+  } else if (customerRequest.phone === '') {
     toast.success('Enter phone number');
+    return false;
+  } else if (customerRequest.paymentCurrency.trim() === '') {
+    toast.success('Select payment currency');
     return false;
   } else if (customerRequest.modeOfPayment.trim() === '') {
     toast.success('Select mode of payment');
     return false;
-  } else if (customerRequest.modeOfPayment.trim() === 'Transfer' && (customerRequest.banks[0].bank === '' || customerRequest.banks[0].amount === '')) {
-    toast.success('Banks record should be filled');
+  } else if (customerRequest.modeOfPayment.trim() === 'Transfer' && errorMessage.value !== '') {
+    toast.success(errorMessage.value);
     return false;
-  } else if (customerRequest.dollarRate.trim() === '') {
+  } else if (customerRequest.dollarRate === '') {
     toast.success('Enter the dollar rate');
     return false;
-  } else if (customerRequest.amountDollar.trim() === '') {
+  } else if (customerRequest.amountDollar === '') {
     toast.success('Enter amount of dollar');
     return false;
-  }else if (localStorageSource.getDollarRate() < customerRequest.amountDollar){
+  } else if (localStorageSource.getDashboardData().availableDollarAmount < customerRequest.amountDollar) {
     alert('There is no suffiecient dollar to complete');
     return false;
   }
@@ -192,15 +232,15 @@ const handleFormSubmission = async (customerRequest) => {
 
     const customerRequestData = {
       name: customerRequest.name,
-      phoneNumber: customerRequest.phone,
+      phoneNumber: customerRequest.phone.toString(),
       modeOfPayment: customerRequest.modeOfPayment,
       banks: banksData,
       dollarRate: customerRequest.dollarRate,
-      balance: '',
-      paymentCurrency: '',
+      balance: customerRequest.balance,
+      paymentCurrency: customerRequest.paymentCurrency,
       paymentEvidence: null,
       dollarAmount: customerRequest.amountDollar,
-      amount: customerRequest.totalAmountNaira,
+      amount: customerRequest.totalAmountNaira || 0.00,
       channel: 'Web'
     };
 
@@ -209,15 +249,39 @@ const handleFormSubmission = async (customerRequest) => {
     const response = await addCustomerUseCase(customerRequestData);
 
     if (response.success) {
-      alert(response.message || "Record added Successful")
       isCustomerAdded.value = true;
-    }
 
+      showApiDialog.value = true;
+      apiStatus.value = response.success;
+      responseMessage.value = response.message || "Record added Successful";
+    }
   }
   catch (error) {
-    console.log('Error occurred:', error.message);
-    alert('Error occurred:', error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
   }
+};
+
+const columns = ['#', 'Date', 'Name', 'Amount(Naira)', 'Rate', 'Amount(Dollar)', 'Mode of Payment'];
+const rows = computed(() =>
+  filteredCustomers.value.map((customer, index) => [
+    index + 1,
+    formatDate(customer.date),
+    customer.name,
+    "#" + customer.amount,
+    customer.dollarRate,
+    formatCurrency(customer.dollarAmount, 'USD'),
+    customer.modeOfPayment,
+  ])
+);
+
+const exportToPDF = () => {
+  exportPDF(columns, rows.value, 'Customers History');
+};
+
+const exportToExcel = () => {
+  exportExcel(columns, rows.value, 'Customers History');
 };
 
 </script>
@@ -370,14 +434,14 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #452900;
 }
 
 table,
 .table-header {
   width: 100%;
   border-collapse: collapse;
-  background-color: beige;
+  background-color: white;
 }
 
 th,

@@ -30,6 +30,8 @@
         <h2>{{ onBankChanged }} History</h2>
         <div class="search-add-container">
           <input type="text" v-model="searchQuery" placeholder="Search..." />
+          <button @click="exportToPDF">Export as PDF</button>
+          <button @click="exportToExcel">Export as Excel</button>
           <button @click="addPayment">Add Record</button>
         </div>
       </div>
@@ -40,16 +42,18 @@
             <th>Transaction Date</th>
             <th>Name</th>
             <th>Entity Type</th>
+            <th>Bank</th>
             <th>Credit</th>
             <th>Debit</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(bank, index) in filteredPayments" :key="bank.id">
+          <tr v-for="(bank, index) in filteredBanks" :key="bank.id">
             <td>{{ index + 1 }}</td>
             <td>{{ formatDate(bank.date) }}</td>
             <td>{{ bank.entityName }}</td>
             <td>{{ bank.personType }}</td>
+            <td>{{ bank.bankName }}</td>
             <td class="credit"> {{ bank.expenseType === 'Credit' ? formatCurrency(bank.amount) : '-' }} </td>
             <td class="debit"> {{ bank.expenseType === 'Debit' ? formatCurrency(bank.amount) : '-' }} </td>
             <td class="delete" @click="deleteRecord(payment)">Delete</td>
@@ -65,6 +69,9 @@
     </div>
 
     <Spinner :loading="loading" />
+
+    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
+      :success="apiStatus" />
 
   </div>
 </template>
@@ -83,7 +90,9 @@ import BankForm from '@/presentation/components/BankForm.vue';
 import signal from '@/assets/ic_signal.svg';
 import naira from '@/assets/ic_naira.svg';
 import bank from '@/assets/ic_bank.svg';
-import { handleApiError } from '../../core/utils/errorHandler';
+import CustomDialog from '../components/CustomDialog.vue';
+import { exportPDF } from '@/core/utils/exportToPDF';
+import { exportExcel } from '@/core/utils/exportToExcel';
 
 
 const loading = ref(false);
@@ -96,6 +105,9 @@ const totalRecord = ref(0);
 const transactionVolume = ref(0);
 const totalTransaction = ref(formatCurrency(0, 'NGN'));
 const onBankChanged = ref('');
+const responseMessage = ref('')
+const apiStatus = ref(false);
+const showApiDialog = ref(false);
 
 const cardsData = [
   { image: signal, title: 'Total No of Customers', value: totalRecord },
@@ -132,7 +144,7 @@ const onMountedHandler = async () => {
   getBankResponse.value = ref([]);
 
   try {
-    const response = await getBankByNameUseCase(onBankChanged.value.replace(' ', ''));
+    const response = await getBankByNameUseCase(onBankChanged.value);
     console.log('Bank record:', response);
 
     getBankResponse.value = response.data || [];
@@ -149,14 +161,16 @@ const onMountedHandler = async () => {
   }
   catch (error) {
     getBankResponse.value = [];
-    alert(error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
   }
   finally {
     loading.value = false;
   }
 };
 
-const filteredPayments = computed(() => {
+const filteredBanks = computed(() => {
   return Array.isArray(getBankResponse.value) ? getBankResponse.value.filter(bank =>
     bank.date.toLowerCase().includes(searchQuery.value.toLowerCase())
   ) : [];
@@ -200,15 +214,19 @@ const handleFormSubmission = async (bankRequest) => {
 
     console.log('This is the response of:', response);
 
-    if (response.data.success) {
-      alert(response.message || "Record added Successful")
-      isBankAdded.value = true;
-    }
 
+    if (response.success || response.data.success) {
+      isBankAdded.value = true;
+
+      showApiDialog.value = true;
+      apiStatus.value = response.success;
+      responseMessage.value = response.message || "Record added Successful";
+    }
   }
   catch (error) {
-    console.log('Error occurred:', error.message);
-    alert(error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
   }
 };
 
@@ -216,6 +234,35 @@ const deleteRecord = (bank) => {
   console.log('Viewing record for:', bank);
   // toast.success('Delete clicked on: ' + bank.id + '-:-' + payment.bankName);
   toast.success('Delete clicked on: ' + payment.bankName);
+};
+
+const done = () => {
+  showApiDialog.value = false;
+};
+
+const columns = ['#', 'Transaction Date', 'Name', 'Entity Type', 'Bank', 'Credit', 'Debit'];
+const rows = computed(() =>
+  filteredBanks.value.map((bank, index) => [
+    index + 1,
+    formatDate(bank.date),
+    bank.entityName,
+    bank.personType,
+    bank.bankName,
+    bank.expenseType === 'Credit' ? "#"+bank.amount : '-',
+    bank.expenseType === 'Debit' ? "#"+bank.amount : '-'
+  ])
+);
+
+const exportToPDF = () => {
+  if (filteredBanks.value.length) {
+    exportPDF(columns, rows.value, onBankChanged.value + ' History');
+  }
+};
+
+const exportToExcel = () => {
+  if (filteredBanks.value.length) {
+    exportExcel(columns, rows.value, onBankChanged.value + ' History');
+  }
 };
 
 </script>
@@ -365,14 +412,14 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #452900;
 }
 
 table,
 .table-header {
   width: 100%;
   border-collapse: collapse;
-  background-color: beige;
+  background-color: white;
 }
 
 th,
