@@ -107,7 +107,7 @@ export default {
         { name: 'Wema Bank' },
         { name: 'Jaiz Bank' },
         { name: 'Union Bank' },
-        { name: 'UBA Bank' }
+        { name: 'UBA' }
       ],
     };
   },

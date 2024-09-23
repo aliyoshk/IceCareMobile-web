@@ -4,7 +4,7 @@
     <div class="form-content">
       <div class="form-item">
         <label for="name">Customer Name</label>
-        <input type="text" id="name" v-model="customer.name" placeholder="Enter customer name"/>
+        <input type="text" id="name" v-model="customer.name" placeholder="Enter customer name" />
       </div>
 
       <div class="form-item">
@@ -76,7 +76,8 @@
         <div class="form-item-wrapper">
           <label for="total-amount-naira">Total Amount (Naira)</label>
           <input type="number" id="total-amount-naira" v-model="customer.totalAmountNaira"
-            placeholder="Enter total amount in Naira" :disabled="shouldDisableTotalAmount" />
+            placeholder="Enter total amount in Naira"
+            :disabled="shouldDisableTotalAmount || shouldDisableNairaFields" />
         </div>
         <div class="form-item-wrapper">
           <label for="balance">Balance (if any)</label>
@@ -87,7 +88,8 @@
       <div class="form-item horizontal-group">
         <div class="form-item-wrapper">
           <label for="dollar-rate">Dollar Rate</label>
-          <input type="number" id="dollar-rate" v-model="customer.dollarRate" placeholder="Enter dollar rate" />
+          <input type="number" id="dollar-rate" v-model="customer.dollarRate" placeholder="Enter dollar rate"
+            disabled />
         </div>
         <div class="form-item-wrapper">
           <label for="amount-dollar">Amount (Dollar)</label>
@@ -105,6 +107,8 @@
 
 
 <script>
+import { Title } from 'chart.js';
+
 export default {
   data() {
     return {
@@ -134,7 +138,7 @@ export default {
     removeBank(index) {
       if (this.customer.banks.length > 1) {
         this.customer.banks.splice(index, 1);
-      } 
+      }
     },
     submitForm() {
       this.$emit('formSubmitted', this.customer);
@@ -145,16 +149,41 @@ export default {
   },
   computed: {
     shouldDisableTotalAmount() {
-      this.customer.totalAmountNaira = '';
-      return this.customer.modeOfPayment === 'Transfer' && (
-        !this.customer.banks.every(bank => bank.name.trim() !== '' && bank.amount !== '')
-      );
+
+      if (this.customer.modeOfPayment === 'Transfer' && this.customer.banks.length) {
+      this.customer.totalAmountNaira = 0;
+        this.customer.banks.forEach(bank => {
+          if (bank.amount) {
+            this.customer.totalAmountNaira += Number(bank.amount);
+          }
+        });
+      }
+
+      return this.customer.modeOfPayment === 'Transfer';
     },
     shouldDisableTransferOption() {
+      this.customer.totalAmountNaira = '';
+
       if (this.customer.paymentCurrency === 'Dollar') {
         this.customer.modeOfPayment = 'Cash';
       }
+
       return this.customer.paymentCurrency === 'Dollar';
+    },
+    shouldDisableNairaFields() {
+      this.customer.dollarRate = this.rate;
+
+      if (this.customer.paymentCurrency === 'Dollar' && this.customer.dollarRate && this.customer.amountDollar) {
+        this.customer.totalAmountNaira = this.customer.amountDollar * this.customer.dollarRate;
+      }
+
+      return this.customer.paymentCurrency === 'Dollar';
+    },
+  },
+  props: {
+    rate: {
+      type: String,
+      required: true
     }
   }
 };

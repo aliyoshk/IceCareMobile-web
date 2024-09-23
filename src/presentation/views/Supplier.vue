@@ -92,6 +92,7 @@ import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
 import signal from '@/assets/ic_signal.svg';
 import naira from '@/assets/ic_naira.svg';
+import router from '../router';
 
 
 const showForm = ref(false);
@@ -169,7 +170,7 @@ const handleFormSubmission = async (supplierRequest) => {
 
     const banksData = supplierRequest.banks.map(bank => ({
       bankName: bank.name,
-      amountTransferred: bank.amount || ''
+      amountTransferred: bank.amount || 0
     }));
 
     const supplierRequestData = {
@@ -179,7 +180,7 @@ const handleFormSubmission = async (supplierRequest) => {
       banks: banksData,
       dollarRate: supplierRequest.dollarRate,
       dollarAmount: supplierRequest.amountDollar,
-      amount: supplierRequest.totalAmountNaira || 0.00,
+      amount: supplierRequest.totalAmountNaira || 0,
       channel: 'Web'
     };
 
@@ -187,12 +188,14 @@ const handleFormSubmission = async (supplierRequest) => {
 
     const response = await addSupplierUseCase(supplierRequestData);
 
-    if (response.success) {
+    if (response.success || response.data.success) {
       isSupplierAdded.value = true;
 
       showApiDialog.value = true;
       apiStatus.value = response.success;
       responseMessage.value = response.message;
+
+      router.go();
     }
   }
   catch (error) {

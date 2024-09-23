@@ -215,5 +215,39 @@ export const dashboardRepository = {
     }
   },
 
+  async addAdmin(adminRequest) {
+    try {
+      console.log('dashboardRepository', adminRequest);
+      const response = await apiSource.addAdmin(adminRequest)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.addAdmin:', adminRequest, ":::::", error);
+      throw new Error(error.message || 'Failed to add admin');
+    }
+  },
+
+  async getAdmins() {
+    try {
+      const response = await apiSource.getAdmins();
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.getAdmins:', error);
+      throw new Error(error.message || 'Failed to fetch data');
+    }
+  },
+
+  async deleteAdmin(id) {
+    try {
+      const response = await apiSource.deleteAdmin(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteAdmin:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteAdmin by id');
+    }
+  },
+
 };
 

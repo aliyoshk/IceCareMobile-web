@@ -6,20 +6,41 @@
 // };
 
 export const handleApiError = (error) => {
-  console.error('API Error:', error);
-  console.error('API Error:', error.response);
-  console.error('API Error:', error.response.statusText);
+
+  console.error('API Error: error', error);
+  console.error('API Error: error.response', error.response);
+  console.error('API Error: error.response.data', error.response.data);
+  console.error('API Error: error.response?.data?.message', error.response?.data?.message);
+  console.error('API Error: error.response.statusText', error.response.statusText);
+  console.error('API Error: error.message', error.message);
+  console.error('API Error: error.response?.data?.message', error.response?.data?.message);
   
-  if (error.response) {
-    const { data } = error.response;
-    console.error('API Error Response Data:', data);
-    console.error('API Error Response Message:', data?.Message);
-    console.error('API Error Response Errors:', data?.Errors);
-  } else {
-    console.error('API Error Message:', error.message);
+  const errorMessages = [];
+  if (error.response?.data?.message && error.response?.data?.errors) {
+    errorMessages.push(error.response?.data?.message);
+    errorMessages.push(error.response?.data?.errors);
+    throw new Error(errorMessages.join('; ',));
   }
-
-  console.error('API Error statusText:', error.response.statusText);
-
-  throw new Error(error.response?.data?.message || error.message || error.response.statusText ||'An unknown error occurred');
+  if (error.response?.data?.message && error.response.statusText) {
+    errorMessages.push(error.response?.data?.message);
+    errorMessages.push(error.response.statusText);
+    throw new Error(errorMessages.join('; ',));
+  }  
+  else if (error.response?.data?.message) {
+    errorMessages.push(error.response?.data?.message)
+    throw new Error(errorMessages.join('; ',));
+  } 
+  else if (error.message) {
+    errorMessages.push(error.message);
+    errorMessages.push(error.response.statusText);
+    throw new Error(errorMessages.join('; ',));
+  }
+  else if (error.response?.data?.errors) {
+    errorMessages.push(error.response?.data?.errors);
+    throw new Error(errorMessages.join('; ',));
+  }
+  else {
+    errorMessages.push('An unknown error occurred');
+    throw new Error(errorMessages.join('; ',));
+  }
 };

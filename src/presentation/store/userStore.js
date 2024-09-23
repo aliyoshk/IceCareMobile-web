@@ -11,15 +11,16 @@ export const useUserStore = defineStore('user', {
     async login(email, password) {
       try {
         const userData = await loginUseCase(email, password);
-        const token = userData.data;
-        this.user = userData;
+
+        localStorageSource.saveUserData(userData.data);
+        const token = userData.data.token;
+        this.user = userData.data;
 
         console.log('User logged in:', userData);
         console.log('Lets verify the this. user:', this.user)
-
       
         localStorage.setItem('authToken', token);
-        localStorage.setItem('user', JSON.stringify(this.user));
+        localStorage.setItem('user', JSON.stringify(userData.data));
         this.error = null;
       } 
       catch (error) {
@@ -31,6 +32,7 @@ export const useUserStore = defineStore('user', {
       this.user = null;
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
+      localStorageSource.clearUserData();
       localStorageSource.clearDashboardData();
     },
     clearError() {

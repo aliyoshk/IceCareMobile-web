@@ -225,6 +225,40 @@ export const apiSource = {
       handleApiError(error);
     }
   },
+
+  async addAdmin(adminRequest) {
+    try {
+      console.log('apiSource', adminRequest);
+      const response = await authService.addAdmin(adminRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource addAdmin:', error);
+      handleApiError(error);
+    }
+  },
+
+  async getAdmins() {
+    try {
+      const response = await authService.getAdmins();
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource getAdmins:', error);
+      handleApiError(error);
+    }
+  },
+
+  async deleteAdmin(id) {
+    try {
+      const response = await authService.deleteAdmin(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteAdmin:', error);
+      handleApiError(error);
+    }
+  },
   
 };
 

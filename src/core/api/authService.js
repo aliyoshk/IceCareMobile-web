@@ -219,5 +219,38 @@ export const authService = {
     }
   },
 
-  // Add more auth-related services as needed
+  async addAdmin(adminRequest) {
+    try {
+      console.log('Sending adminRequest:', adminRequest);
+      const response = await apiClient.post(API_ENDPOINTS.ADD_ADMIN, adminRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService adminRequest:', error);
+      throw error;
+    }
+  },
+
+  async getAdmins() {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_ADMINS);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getAdmins:', error);
+      throw error;
+    }
+  },
+
+  async deleteAdmin(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_ADMIN(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteAdmin:', error);
+      throw error;
+    }
+  },
+
 };

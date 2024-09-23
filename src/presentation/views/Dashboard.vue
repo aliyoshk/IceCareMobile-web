@@ -15,9 +15,14 @@
     <section class="top-section">
       <div class="chart-card">
         <div class="chart-container">
-          <Bar :data="barChartData" :options="barChartOptions" />
+          <apexchart type="bar" :options="barChartOptions" :series="barChartSeries"></apexchart>
         </div>
       </div>
+      <!-- <div class="chart-card">
+        <div class="chart-container">
+          <Bar :data="barChartData" :options="barChartOptions" />
+        </div>
+      </div> -->
 
       <div class="info-cards">
         <div class="card available-dollar">
@@ -36,35 +41,51 @@
     <!-- Fund Transfers and Transaction History Section -->
     <section class="transfer-transaction-section">
       <div class="transfer-list">
-        <h4>Recent Fund Transfers</h4>
-        <ul>
-          <li v-for="(transfer, index) in recentTransfers" :key="index">
+        <h3 id="title">Recent Incoming Transfer</h3>
+
+        <div v-if="recentTransfers.length === 0" class="empty-state">
+          <EmptyState :image="ic_no_transfer" :title="'No transfer history”'"
+            :message="'You cannot view  transaction history at the moment until a transfer has been performed'" />
+        </div>
+
+        <div v-else v-for="(transfer, index) in recentTransfers" :key="index" class="transfer-data">
+          <div class="transfer-header">
+            <h4 class="transfer-name">{{ transfer.name }}</h4>
+            <h4 class="amount">{{ formatCurrency(transfer.amount) }}</h4>
+          </div>
+          <h5 class="transfer-date">{{ moment(transfer.date).fromNow() + ', ' + moment(transfer.date).format('h:mmA') }}
+          </h5>
+        </div>
+        <!-- <ul>
+          <li >
             {{ transfer }}
           </li>
-        </ul>
+        </ul> -->
       </div>
 
       <div class="transaction-history">
-        <h4>Transaction History</h4>
-        <div class="transactions-table">
+        <h3 id="title">Transaction History</h3>
+
+        <div v-if="recentTransactions.length === 0" class="empty-state">
+          <EmptyState :image="ic_no_history" :title="'No “transaction history” ”'"
+            :message="'You cannot view transaction history at the moment until a transfer has been performed'" />
+        </div>
+
+        <div v-else class="transactions-table">
           <div class="table-header">
             <div>#</div>
             <div>Date</div>
-            <div>Reference</div>
             <div>Name</div>
             <div>Amount</div>
-            <div>Payment Method</div>
-            <div>Status</div>
+            <div>M.O.P</div>
           </div>
           <div class="table-body">
             <div v-for="(transaction, index) in recentTransactions" :key="index" class="table-row">
               <div>{{ index + 1 }}</div>
               <div>{{ transaction.date }}</div>
-              <div>{{ transaction.reference }}</div>
               <div>{{ transaction.name }}</div>
               <div>{{ transaction.amount }}</div>
               <div>{{ transaction.paymentMethod }}</div>
-              <div>{{ transaction.status }}</div>
             </div>
           </div>
         </div>
@@ -74,11 +95,40 @@
     <!-- Pricing Details and Transaction Trend Section -->
     <section class="pricing-trend-section">
       <div class="pricing-details">
-        <h4>Pricing Details</h4>
+        <h3 id="title">Pending Registrations</h3>
+
+        <div v-if="pendingRegistration.length === 0" class="empty-state">
+          <EmptyState :image="ic_no_history" :title="'No “registration history”'"
+            :message="'You cannot view anything at the moment, until request has been made'" />
+        </div>
+
+        <div v-else class="transactions-table">
+          <div class="table-header">
+            <div>#</div>
+            <div>Date</div>
+            <div>Name</div>
+          </div>
+          <div class="table-body">
+            <div v-for="(registration, index) in pendingRegistration" :key="index" class="table-row">
+              <div>{{ index + 1 }}</div>
+              <div>{{ registration.date }}</div>
+              <div>{{ transaction.name }}</div>
+            </div>
+          </div>
+        </div>
+
       </div>
+
+
       <div class="transaction-trend">
-        <h4>Transaction Trend</h4>
-        <div class="pie-chart-container">
+        <h3>Pricing Trend</h3>
+
+        <div v-if="pieChartData.length === 0" class="empty-state">
+          <EmptyState :image="ic_pieChart" :title="'No “pricing trends” ”'"
+            :message="'You cannot view your settlements at the moment, no transaction performed'" />
+        </div>
+
+        <div v-else class="pie-chart-container">
           <Pie :data="pieChartData" :options="pieChartOptions" />
         </div>
       </div>
@@ -114,6 +164,7 @@
 <script setup>
 import { ref, onMounted, watchEffect } from 'vue';
 import { Bar, Pie } from 'vue-chartjs';
+import ApexChart from 'vue3-apexcharts';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
 import { fetchDashboardDataUseCase, updateDollarRateUseCase } from '../../domain/useCases/dashboardUseCase';
 import Spinner from '../components/Spinner.vue';
@@ -124,7 +175,13 @@ import { storesManager } from '@/presentation/store/userStore';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import { localStorageSource } from '@/data/sources/localStorage';
 import CustomDialog from '../components/CustomDialog.vue';
-//import icons from '@/assets/i*.svg';
+import EmptyState from '../components/EmptyState.vue';
+import router from '../router';
+import moment from 'moment';
+import ic_barchart from '@/assets/ic_barchart_null.svg';
+import ic_pieChart from '@/assets/ic_piechart_null.svg';
+import ic_no_history from '@/assets/ic_history_null.svg';
+import ic_no_transfer from '@/assets/ic_transfer_null.svg';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
 
@@ -136,46 +193,40 @@ const apiStatus = ref(false);
 const showApiDialog = ref(false);
 
 const showDollarForm = ref(false);
-const dollarUpdate = ref(false);
 const metrics = ref([]);
-const availableDollar = ref('');
-const dollarRate = ref('');
+const availableDollar = ref(0);
+const dollarRate = ref(0);
 const recentTransfers = ref([]);
 const recentTransactions = ref([]);
 const newDollarValue = ref('');
+const pendingRegistration = ref([]);
 
-const barChartData = ref({
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  datasets: [
-    {
-      label: 'Total Monthly Income ($)',
-      backgroundColor: 'goldenrod',
-      data: [1200, 1500, 800, 1700, 2000, 1800, 2200, 2100, 1900, 2300, 2500, 2400],
-    },
-  ],
-});
-
+const barChartSeries = ref([]);
 const barChartOptions = ref({
-  responsive: true,
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
+  chart: {
+    height: '100px',
+    type: 'bar',
+    toolbar: {
+      show: true,
     },
-    title: {
-      display: true,
-      text: 'Total Monthly Income',
-      padding: {
-        top: 5,
-        bottom: 5
-      },
-      align: 'start',
-      color: '#333',
-      font: {
-        size: 18,
-        weight: 'bold'
-      },
+  },
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      endingShape: 'rounded',
+      columnWidth: '55%'
     },
+  },
+  dataLabels: {
+    enabled: true,
+  },
+  xaxis: {
+    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  },
+  colors: ['#F3B923'],
+  title: {
+    text: 'Total Monthly Income',
+    align: 'left',
   },
 });
 
@@ -227,8 +278,7 @@ const updateDollar = async () => {
         apiStatus.value = response.success;
         responseMessage.value = response.message;
 
-        dollarUpdate.value = true
-        console.log("Lets listen to update flag", dollarUpdate.value);
+        refreshDashboard();
       }
 
     }
@@ -245,20 +295,11 @@ const updateDollar = async () => {
   }
 };
 
-watchEffect(() => {
-  console.log("Lets listen to watch effect flag", dollarUpdate.value);
-  if (dollarUpdate.value === true) {
-    onMountedHandler()
-  }
-});
+const refreshDashboard = () => {
+  router.go()
+};
 
 onMounted(async () => {
-  onMountedHandler();
-});
-
-
-
-const onMountedHandler = async () => {
   loading.value = true;
 
   try {
@@ -268,27 +309,45 @@ const onMountedHandler = async () => {
     localStorageSource.savedDashboardData(dashboardData.data);
     store.setName(dashboardData.data.adminName);
 
+    // Initialize monthly income array
+    const monthlyIncome = Array(12).fill(0);
+    // Populate the monthly income array
+    dashboardData.data.monthlyTransfers.forEach(item => {
+      const monthIndex = item.month - 1; // Convert to 0-based index
+      monthlyIncome[monthIndex] += item.totalAmount;
+    });
+    // Set the bar chart series data
+    barChartSeries.value = [{
+      name: 'Total Monthly Income ($)',
+      data: monthlyIncome,
+    }];
+
+
+    //   barChartSeries.value = [{
+    //   name: 'Total Monthly Income ($)',
+    //   data: dashboardData.data.monthlyTransfers.map(item => item.totalAmount),
+    // }];
+
     metrics.value = dashboardData.metrics || [
-      { title: 'All Time Earnings', value: formatCurrency(dashboardData.data.totalTransferredAmount.toLocaleString()) || '0', icon: ic_image },
+      { title: 'All Time Earnings', value: formatCurrency(dashboardData.data.totalTransferredAmount) || '0', icon: ic_image },
       { title: 'Total No of Transactions', value: '1,500', icon: ic_image },
       { title: 'Received Today', value: formatCurrency('0.00'), icon: ic_image },
       { title: 'No of Customers', value: dashboardData.data.numberOfCustomers || '0', icon: ic_image },
     ];
 
-    availableDollar.value = formatCurrency(dashboardData.data.availableDollarAmount.toLocaleString(), 'USD') || '';
+    availableDollar.value = formatCurrency(dashboardData.data.availableDollarAmount, 'USD') || '';
     dollarRate.value = formatCurrency(dashboardData.data.dollarRate);
 
 
-    recentTransfers.value = dashboardData.recentTransfers || ['Transfer 1', 'Transfer 2', 'Transfer 3', 'Transfer 4', 'Transfer 5'];
+    recentTransfers.value = dashboardData.data.pendingTransfer || [];
+    pendingRegistration.value = dashboardData.data.pendingRegistration || [];
+
     recentTransactions.value = dashboardData.recentTransactions || [
       { date: '2024-09-01', reference: 'Ref123', name: 'John Doe', amount: '$100', paymentMethod: 'Transfer', status: 'Completed' },
       { date: '2024-09-02', reference: 'Ref124', name: 'Jane Smith', amount: '$150', paymentMethod: 'Cash', status: 'Pending' },
       { date: '2024-09-02', reference: 'Ref124', name: 'Jane Smith', amount: '$150', paymentMethod: 'Transfer', status: 'Pending' },
       { date: '2024-09-01', reference: 'Ref123', name: 'John Doe', amount: '$100', paymentMethod: 'Transfer', status: 'Completed' },
     ];
-
-    barChartData.value.labels = dashboardData.barChartLabels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    barChartData.value.datasets[0].data = dashboardData.barChartData || [1200, 1500, 800, 1700, 2000, 1800, 2200, 2100, 1900, 2300, 2500, 2400];
 
     pieChartData.value.labels = dashboardData.pieChartLabels || ['Category A', 'Category B', 'Category C', 'Category D'];
     pieChartData.value.datasets[0].data = dashboardData.pieChartData || [300, 450, 100, 150];
@@ -301,9 +360,8 @@ const onMountedHandler = async () => {
   }
   finally {
     loading.value = false;
-    dollarUpdate.value === false;
   }
-};
+});
 
 </script>
 
@@ -365,7 +423,6 @@ const onMountedHandler = async () => {
 
 .top-section {
   display: flex;
-  flex-wrap: wrap;
   /* Allows items to wrap */
   gap: 15px;
   margin-bottom: 20px;
@@ -384,6 +441,7 @@ const onMountedHandler = async () => {
 .chart-container {
   padding: 0px 0;
   height: calc(100% - 5px);
+  overflow: auto;
 }
 
 .info-cards {
@@ -449,7 +507,6 @@ const onMountedHandler = async () => {
 }
 
 .table-header {
-  background-color: #e0e0e0;
   font-weight: bold;
 }
 
@@ -705,5 +762,36 @@ input[type=number] {
     font-size: 20px;
     /* Adjust font sizes for very small screens */
   }
+}
+
+.transfer-header {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.transfer-name {
+  font-weight: bold;
+}
+
+.amount {
+  margin-left: auto;
+  color: green;
+  font-weight: bold;
+}
+
+.transfer-date {
+  display: block;
+  color: #999;
+  margin-bottom: 5px;
+}
+
+#title {
+  font-weight: bold;
+}
+
+.chart-canvas {
+  height: 250px;
+  /* Adjust the height as needed */
 }
 </style>

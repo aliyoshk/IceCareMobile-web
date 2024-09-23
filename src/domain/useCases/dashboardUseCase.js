@@ -198,3 +198,37 @@ export const approveTransfer = async (approveTransferRequest) => {
     throw new Error(error.message || 'An error occurred adding approveTransfer record');
   }
 };
+
+
+export const addAdminUseCase = async (adminRequest) => {
+  try {
+    console.log('dashboardUseCase', adminRequest);
+    const response = await dashboardRepository.addAdmin(adminRequest);
+    console.log('Response from API:', response);
+    return response;
+  } 
+  catch (error) {
+    console.log('Error in dashboardUseCase: addAdminUseCase', error);
+    throw new Error(error.message || 'An error occurred adding admin record');
+  }
+};
+
+export const getAdminsUseCase = async() => {
+  try {
+    return await dashboardRepository.getAdmins();
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: getAdminsUseCase', error);
+    throw new Error(error.message);
+  }
+};
+
+export const deleteAdminUseCase = async (id) => {
+  try {
+    return await dashboardRepository.deleteAdmin(id);
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: deleteAdmin', error.message);
+    throw new Error(error.message || 'An error occurred on delete admin');
+  }
+};

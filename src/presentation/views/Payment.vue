@@ -80,12 +80,12 @@ import { localStorageSource } from '@/data/sources/localStorage';
 import CustomDialog from '../components/CustomDialog.vue';
 import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
+import router from '../router';
 
 const loading = ref(false);
 const showForm = ref(false);
 const toast = useToast();
 const searchQuery = ref('');
-const isPaymentAdded = ref(false);
 const getPaymentResponse = ref([]);
 const totalRecord = ref(0);
 const transactionVolume = ref(0);
@@ -104,19 +104,7 @@ const cardsData = [
 const addPayment = () => showForm.value = true;
 
 
-watchEffect(() => {
-  if (isPaymentAdded.value === true) {
-    onMountedHandler()
-    isPaymentAdded.value === false;
-  }
-});
-
-
 onMounted(async () => {
-  onMountedHandler();
-});
-
-const onMountedHandler = async () => {
   loading.value = true;
 
   try {
@@ -144,7 +132,8 @@ const onMountedHandler = async () => {
   finally {
     loading.value = false;
   }
-};
+});
+
 
 const filteredPayments = computed(() => {
   return Array.isArray(getPaymentResponse.value) ? getPaymentResponse.value.filter(payment =>
@@ -156,7 +145,7 @@ const validateFormField = (request) => {
   if (request.CustomerName.trim() === '') {
     toast.success('Enter Customer name');
     return false;
-  } else if (request.DollarAmount.trim() === '') {
+  } else if (request.DollarAmount === '') {
     toast.success('Enter dollar amount');
     return false;
   }
@@ -188,11 +177,10 @@ const handleFormSubmission = async (paymentRequest) => {
     console.log('This is the response of:', response);
 
     if (response.success || response.data.success) {
-      isPaymentAdded.value = true;
-
       showApiDialog.value = true;
       apiStatus.value = response.success;
       responseMessage.value = response.message || "Record added Successful";
+      router.go();
     }
   }
   catch (error) {

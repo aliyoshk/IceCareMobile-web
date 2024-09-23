@@ -17,6 +17,7 @@
 
           <div class="dropdown-container">
             <select id="banks" v-model="onBankChanged">
+              <option value=""> Select Bank </option>
               <option v-for="(bank, index) in banks" :key="index" v-value="bank.name"> {{ bank.name }} </option>
             </select>
           </div>
@@ -26,7 +27,7 @@
     </section>
 
     <div class="table-container">
-      <div class="table-header" v-if="(onBankChanged)">
+      <div class="table-header" v-if="onBankChanged && selectedBank !== 'Select Bank'">
         <h2>{{ onBankChanged }} History</h2>
         <div class="search-add-container">
           <input type="text" v-model="searchQuery" placeholder="Search..." />
@@ -56,7 +57,7 @@
             <td>{{ bank.bankName }}</td>
             <td class="credit"> {{ bank.expenseType === 'Credit' ? formatCurrency(bank.amount) : '-' }} </td>
             <td class="debit"> {{ bank.expenseType === 'Debit' ? formatCurrency(bank.amount) : '-' }} </td>
-            <td class="delete" @click="deleteRecord(payment)">Delete</td>
+            <td class="delete" @click="deleteRecord(bank)">Delete</td>
           </tr>
         </tbody>
       </table>
@@ -93,6 +94,7 @@ import bank from '@/assets/ic_bank.svg';
 import CustomDialog from '../components/CustomDialog.vue';
 import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
+import router from '../router';
 
 
 const loading = ref(false);
@@ -120,7 +122,11 @@ const banks = [
   { name: 'Wema Bank' }, { name: 'Jaiz Bank' }, { name: 'Union Bank' }, { name: 'UBA Bank' },
 ];
 
-const addPayment = () => showForm.value = true;
+const addPayment = () => {
+  if (filteredBanks.value.length) {
+    showForm.value = true;
+  }
+};
 
 
 watchEffect(() => {
@@ -201,10 +207,10 @@ const handleFormSubmission = async (bankRequest) => {
 
     const bankRequestData = {
       entityName: bankRequest.Name,
-      bankName: onBankChanged.value.replace(' ', ''),
+      bankName: onBankChanged.value,
       personType: 'Others',
       expenseType: 'Debit',
-      amount: bankRequest.amount,
+      amount: bankRequest.Amount,
     };
 
     console.log('This is the content of:', bankRequestData);
@@ -215,11 +221,11 @@ const handleFormSubmission = async (bankRequest) => {
     console.log('This is the response of:', response);
 
 
-    if (response.success || response.data.success) {
+    if (response.data.success) {
       isBankAdded.value = true;
 
       showApiDialog.value = true;
-      apiStatus.value = response.success;
+      apiStatus.value = response.data.success;
       responseMessage.value = response.message || "Record added Successful";
     }
   }
@@ -233,7 +239,7 @@ const handleFormSubmission = async (bankRequest) => {
 const deleteRecord = (bank) => {
   console.log('Viewing record for:', bank);
   // toast.success('Delete clicked on: ' + bank.id + '-:-' + payment.bankName);
-  toast.success('Delete clicked on: ' + payment.bankName);
+  toast.success('Delete clicked on: ' + bank.bankName);
 };
 
 const done = () => {
@@ -248,8 +254,8 @@ const rows = computed(() =>
     bank.entityName,
     bank.personType,
     bank.bankName,
-    bank.expenseType === 'Credit' ? "#"+bank.amount : '-',
-    bank.expenseType === 'Debit' ? "#"+bank.amount : '-'
+    bank.expenseType === 'Credit' ? "#" + bank.amount : '-',
+    bank.expenseType === 'Debit' ? "#" + bank.amount : '-'
   ])
 );
 

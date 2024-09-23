@@ -108,7 +108,7 @@ onMounted(async () => {
         response.value.forEach((item) => {
             if (item.bankDetails && item.bankDetails.length) {
                 item.bankDetails.forEach((bankDetail) => {
-                    totalAmount.value += bankDetail.transferredAmount;
+                    totalAmount.value += bankDetail.amountTransferred;
                 });
             }
         });
@@ -242,8 +242,8 @@ const exportToPDF = () => {
     flex-direction: column;
     padding-top: 5%;
     background-color: #E9E5E5;
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
     box-sizing: border-box;
     overflow: auto;
     font-family: 'Inter', sans-serif;
@@ -325,7 +325,7 @@ const exportToPDF = () => {
 }
 
 .table-container {
-    margin-top: 20px;
+    margin: 20px;
 }
 
 .table-header {
@@ -371,7 +371,7 @@ table,
 .table-header {
     width: 100%;
     border-collapse: collapse;
-    background-color: beige;
+    background-color: white;
 }
 
 th,

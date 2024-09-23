@@ -42,6 +42,7 @@
             <th>Amount (Naira)</th>
             <th>Rate</th>
             <th>Amount (Dollar)</th>
+            <th>Payment Currency</th>
             <th>Mode of Payment</th>
             <th>Action</th>
           </tr>
@@ -54,6 +55,7 @@
             <td>{{ formatCurrency(customer.amount, 'NGN') }}</td>
             <td>{{ customer.dollarRate }}</td>
             <td>{{ formatCurrency(customer.dollarAmount, 'USD') }}</td>
+            <td>{{ customer.paymentCurrency }}</td>
             <td>{{ customer.modeOfPayment }}</td>
             <td class="view" @click="viewRecord(customer)">View Details</td>
           </tr>
@@ -63,7 +65,7 @@
 
     <div v-if="showForm" class="modal-overlay">
       <div class="modal">
-        <CustomerForm @formSubmitted="handleFormSubmission" />
+        <CustomerForm @formSubmitted="handleFormSubmission" :rate="localStorageSource.getDashboardData().dollarRate"/>
         <button class="close-btn" @click="showForm = false">Close</button>
       </div>
     </div>
@@ -93,6 +95,7 @@ import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
 import signal from '@/assets/ic_signal.svg';
 import naira from '@/assets/ic_naira.svg';
+import router from '../router';
 
 const loading = ref(false);
 const showForm = ref(false);
@@ -227,7 +230,7 @@ const handleFormSubmission = async (customerRequest) => {
 
     const banksData = customerRequest.banks.map(bank => ({
       bankName: bank.name,
-      amountTransferred: bank.amount
+      amountTransferred: bank.amount || 0
     }));
 
     const customerRequestData = {
@@ -238,9 +241,9 @@ const handleFormSubmission = async (customerRequest) => {
       dollarRate: customerRequest.dollarRate,
       balance: customerRequest.balance,
       paymentCurrency: customerRequest.paymentCurrency,
-      paymentEvidence: null,
+      paymentEvidence: [{ receipt: "-" }],
       dollarAmount: customerRequest.amountDollar,
-      amount: customerRequest.totalAmountNaira || 0.00,
+      amount: customerRequest.totalAmountNaira || 0,
       channel: 'Web'
     };
 
@@ -248,12 +251,14 @@ const handleFormSubmission = async (customerRequest) => {
 
     const response = await addCustomerUseCase(customerRequestData);
 
-    if (response.success) {
+    if (response.success || response.data.success) {
       isCustomerAdded.value = true;
 
       showApiDialog.value = true;
       apiStatus.value = response.success;
       responseMessage.value = response.message || "Record added Successful";
+
+      router.go();
     }
   }
   catch (error) {
@@ -263,7 +268,7 @@ const handleFormSubmission = async (customerRequest) => {
   }
 };
 
-const columns = ['#', 'Date', 'Name', 'Amount(Naira)', 'Rate', 'Amount(Dollar)', 'Mode of Payment'];
+const columns = ['#', 'Date', 'Name', 'Amount(Naira)', 'Rate', 'Amount(Dollar)', 'Payment Currency', 'Mode of Payment'];
 const rows = computed(() =>
   filteredCustomers.value.map((customer, index) => [
     index + 1,
@@ -272,6 +277,7 @@ const rows = computed(() =>
     "#" + customer.amount,
     customer.dollarRate,
     formatCurrency(customer.dollarAmount, 'USD'),
+    customer.paymentCurrency,
     customer.modeOfPayment,
   ])
 );

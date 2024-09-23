@@ -1,6 +1,7 @@
 <template>
   <!-- <div class="app-container"> -->
-  <div :class="isLoginRoute || isRegistrationRoute || isTransferRoute || isTransferDetailsRoute ? 'app-container-white' : 'app-container'">
+  <div
+    :class="isLoginRoute || isRegistrationRoute || isTransferRoute || isTransferDetailsRoute ? 'app-container-white' : 'app-container'">
     <!-- Sidebar Section -->
     <aside v-if="!isLoginRoute && !isRegistrationRoute && !isTransferRoute && !isTransferDetailsRoute" class="sidebar">
 
@@ -39,17 +40,24 @@
           <img class="nav-icon" src="@/assets/ic_back_office.svg" alt="Back Office Icon" />
           Back Office
         </RouterLink>
-        <RouterLink to="/admin-panel" exact-active-class="active-link">
+        <RouterLink v-if="showAdminPanel" to="/admin-panel" exact-active-class="active-link">
           <img class="nav-icon" src="@/assets/ic_admin_panel.svg" alt="Admin Panel Icon" />
           Admin Panel
         </RouterLink>
       </nav>
+
+      <div class="logout" @click="logout">
+        <img class="nav-icon" src="@/assets/ic_logout.svg" alt="Logout Icon" />
+        <h4> Logout </h4>
+      </div>
+
     </aside>
 
 
     <!-- Greeting and Header Section (outside sidebar, but hidden on login route) -->
     <div class="content-container">
-      <header v-if="!isLoginRoute && !isRegistrationRoute && !isTransferRoute && !isTransferDetailsRoute" class="header">
+      <header v-if="!isLoginRoute && !isRegistrationRoute && !isTransferRoute && !isTransferDetailsRoute"
+        class="header">
         <div class="greeting">
           <span>Hi, {{ adminName }}</span>
         </div>
@@ -74,11 +82,11 @@
           <span class="golden-text">Ltd</span>
         </h4>
       </div>
-      <main :class="{ 
-        'main-content': !isLoginRoute && !isRegistrationRoute && !isTransferRoute && !isTransferDetailsRoute, 
-        'login-content': isLoginRoute, 
+      <main :class="{
+        'main-content': !isLoginRoute && !isRegistrationRoute && !isTransferRoute && !isTransferDetailsRoute,
+        'login-content': isLoginRoute,
         'registration-content': isRegistrationRoute || isTransferRoute || isTransferDetailsRoute
-        }">
+      }">
         <RouterView />
       </main>
     </div>
@@ -86,12 +94,14 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue';
+
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import { storesManager } from '@/presentation/store/userStore';
 import { localStorageSource } from '@/data/sources/localStorage';
 import { useUserStore } from '@/presentation/store/userStore';
+import { startSessionTimer, stopSessionTimer } from '@/core/utils/sessionManager';
 
 
 export default {
@@ -117,7 +127,16 @@ export default {
       showDropdown.value = false;
       router.go();
     };
-    
+
+
+    onMounted(() => {
+      startSessionTimer(); // Start the session timer on app load
+    });
+
+    onBeforeUnmount(() => {
+      stopSessionTimer(); // Stop the timer when the component is destroyed
+    });
+
 
     return {
       isLoginRoute,
@@ -126,6 +145,7 @@ export default {
       isTransferDetailsRoute,
       adminName: computed(() => localStorageSource.getDashboardData()?.adminName ?? adminStore.name),
       showDropdown,
+      showAdminPanel: computed(() => localStorageSource.getUserData()?.showAdminPanel),
       logout,
     };
   }
@@ -134,6 +154,11 @@ export default {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700&display=swap');
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
 
 .app-container {
   display: flex;
@@ -225,13 +250,18 @@ export default {
 
 .registration-content {
   flex-grow: 1;
-  width: 70%;             /* Set width to 50% of the screen */
-  margin: 0 auto;          /* Center the content horizontally */
+  width: 70%;
+  /* Set width to 50% of the screen */
+  margin: 0 auto;
+  /* Center the content horizontally */
   overflow-y: hidden;
   text-align: center;
-  display: flex;           /* Enable flexbox */
-  justify-content: center; /* Center horizontally */
-  align-items: center;     /* Center vertically */
+  display: flex;
+  /* Enable flexbox */
+  justify-content: center;
+  /* Center horizontally */
+  align-items: center;
+  /* Center vertically */
 }
 
 .logo-only {
@@ -291,21 +321,42 @@ header {
   top: 100%;
   z-index: 1000;
   background: rgba(255, 255, 255, 0.9);
-  cursor:pointer;
+  cursor: pointer;
 }
 
 .dropdown-options li {
-  padding: 10px; /* Add padding to items */
+  padding: 10px;
+  /* Add padding to items */
 }
 
 .dropdown-options li a {
-  text-decoration: none; /* Remove underline */
-  color: black; /* Set text color */
-  display: block; /* Make the whole area clickable */
+  text-decoration: none;
+  /* Remove underline */
+  color: black;
+  /* Set text color */
+  display: block;
+  /* Make the whole area clickable */
 }
 
 .dropdown-options li a:hover {
-  background-color: #f0f0f0; /* Highlight on hover */
+  background-color: #f0f0f0;
+  /* Highlight on hover */
 }
 
+.logout {
+  display: flex;
+  justify-content: center;
+  color: #6C6C6C;
+  margin-bottom: 20%;
+  cursor: pointer;
+}
+
+.logout:hover {
+  color: #fa6e6e
+}
+
+.logout h4 {
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+}
 </style>
