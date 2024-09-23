@@ -57,7 +57,7 @@
             <td>{{ formatCurrency(customer.dollarAmount, 'USD') }}</td>
             <td>{{ customer.paymentCurrency }}</td>
             <td>{{ customer.modeOfPayment }}</td>
-            <td class="view" @click="viewRecord(customer)">View Details</td>
+            <td class="delete" @click="deleteRecord(customer)">Delete Customer</td>
           </tr>
         </tbody>
       </table>
@@ -65,32 +65,33 @@
 
     <div v-if="showForm" class="modal-overlay">
       <div class="modal">
-        <CustomerForm @formSubmitted="handleFormSubmission" :rate="localStorageSource.getDashboardData().dollarRate"/>
+        <CustomerForm @formSubmitted="handleFormSubmission" :rate="localStorageSource.getDashboardData().dollarRate" />
         <button class="close-btn" @click="showForm = false">Close</button>
       </div>
     </div>
 
     <Spinner :loading="loading" />
 
-    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
-      :success="apiStatus" />
+    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done" :success="apiStatus" />
 
+    <ConfirmDialog v-if="isDialogVisible" :title="dialogTitle" :message="dialogMessage" :show="isDialogVisible" @confirm="handleDelete" @cancel="cancelDialog" />
   </div>
 </template>
 
 
 
 <script setup>
-import { ref, computed, onMounted, watchEffect } from 'vue';
+import { ref, computed, onMounted, watchEffect, nextTick } from 'vue';
 import { customerData } from '@/data/mockData/customerData';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
-import { getCustomersUseCase, addCustomerUseCase } from '@/domain/useCases/dashboardUseCase';
+import { getCustomersUseCase, addCustomerUseCase, deleteCustomerUseCase } from '@/domain/useCases/dashboardUseCase';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import CustomerForm from '@/presentation/components/CustomerForm.vue';
 import { localStorageSource } from '@/data/sources/localStorage';
 import CustomDialog from '../components/CustomDialog.vue';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
 import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
 import signal from '@/assets/ic_signal.svg';
@@ -102,7 +103,7 @@ const showForm = ref(false);
 const toast = useToast();
 const searchQuery = ref('');
 const customers = ref(customerData);
-const isCustomerAdded = ref(false);
+const isEndPointHit = ref(false);
 const totalAmount = ref('');
 const totalDollar = ref('');
 const totalCustomers = ref('');
@@ -110,6 +111,10 @@ const errorMessage = ref('');
 const responseMessage = ref('')
 const apiStatus = ref(false);
 const showApiDialog = ref(false);
+const isDialogVisible = ref(false);
+const dialogTitle = ref('');
+const dialogMessage = ref('');
+const seletedCustomer = ref([]);
 
 const cardsData = [
   { image: signal, title: 'Total No of Customers', value: totalCustomers },
@@ -125,10 +130,43 @@ const filteredCustomers = computed(() => {
   );
 });
 
-const viewRecord = (customer) => {
+const deleteRecord = (customer) => {
+
+  seletedCustomer.value = [];
+
+  dialogTitle.value = 'Delete Record';
+  dialogMessage.value = `Proceeding would delete ${customer.name} record`;
+  isDialogVisible.value = true;
+
+  seletedCustomer.value = customer;
+
   console.log('Viewing record for:', customer);
   toast.success('Viewing details for: ' + customer.name);
-  // Implement navigation or modal display
+};
+
+const cancelDialog = () => {
+  isDialogVisible.value = false;
+  showApiDialog.value = false;
+}
+
+const handleDelete = async () => {
+  isDialogVisible.value = false;
+  try {
+    const response = await deleteCustomerUseCase(seletedCustomer.value.id);
+
+    if (response.success || response.data.success) {
+      isEndPointHit.value = true;
+      showApiDialog.value = true;
+      apiStatus.value = true;
+      responseMessage.value = response.message || "Record deleted Successful";
+    }
+  }
+  catch (error) {
+    console.log('Error occurred:', error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
+  }
 };
 
 const addCustomer = () => {
@@ -141,12 +179,13 @@ const done = () => {
 };
 
 watchEffect(() => {
-  if (isCustomerAdded.value === true) {
-    onMountedHandler()
-    isCustomerAdded.value === false;
+  if (isEndPointHit.value === true) {
+    nextTick(() => {
+      onMountedHandler();
+      isEndPointHit.value = false;
+    });
   }
 });
-
 
 onMounted(async () => {
   onMountedHandler();
@@ -175,7 +214,7 @@ const onMountedHandler = async () => {
 };
 
 const validateFormField = (customerRequest) => {
-  
+
   errorMessage.value = '';
   customerRequest.banks.forEach(bank => {
     if (bank.name === '') {
@@ -252,7 +291,7 @@ const handleFormSubmission = async (customerRequest) => {
     const response = await addCustomerUseCase(customerRequestData);
 
     if (response.success || response.data.success) {
-      isCustomerAdded.value = true;
+      isEndPointHit.value = true;
 
       showApiDialog.value = true;
       apiStatus.value = response.success;
@@ -325,6 +364,7 @@ const exportToExcel = () => {
   padding: 10px;
   gap: 10px;
   max-width: 300px;
+  flex: 1 1 200px; /* Make card responsive */
 }
 
 .card img {
@@ -361,14 +401,14 @@ const exportToExcel = () => {
 
 .small-card {
   width: 200px;
-  height: 90px;
+  height: auto;
 }
 
 .large-card {
   width: calc(100% - 420px);
-  height: 90px;
+  height: auto;
   flex-grow: 1;
-  margin-left: 100px;
+  margin-left: 50px;
 }
 
 .large-card .content {
@@ -403,10 +443,7 @@ const exportToExcel = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 20px;
-  padding-left: 30px;
-  padding-right: 30px;
-  padding-bottom: 10px;
+  padding: 20px 30px; /* Combined padding for consistency */
 }
 
 .table-header h2 {
@@ -421,12 +458,16 @@ const exportToExcel = () => {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: nowrap; /* Ensure elements don't wrap */
 }
 
 input[type="text"] {
   padding: 5px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  flex: 1; /* Allow input to grow */
+  min-width: 150px; /* Set a minimum width */
+  max-width: 300px; /* Set a maximum width */
 }
 
 button {
@@ -469,7 +510,7 @@ th {
   font-weight: bold;
 }
 
-.view {
+.delete {
   color: #A90836;
   border: none;
   padding: 5px 10px;
@@ -508,4 +549,68 @@ th {
   padding: 5px 10px;
   cursor: pointer;
 }
+
+/* Media Queries for Responsiveness */
+@media (max-width: 1024px) {
+  .large-card {
+    margin-left: 20px; /* Reduce margin for medium screens */
+    width: calc(100% - 40px); /* Adjust width to fill space */
+  }
+
+  .table-header {
+    flex-direction: column; /* Stack header items on smaller screens */
+    align-items: flex-start; /* Align items to the start */
+  }
+}
+
+@media (max-width: 768px) {
+  .info-card {
+    flex-direction: column; /* Stack cards on smaller screens */
+    align-items: center; /* Center alignment for better aesthetics */
+  }
+
+  .large-card {
+    margin-left: 0; /* Remove left margin on smaller screens */
+    width: 100%; /* Full width for large cards */
+  }
+
+  .card {
+    max-width: 100%; /* Allow cards to use full width */
+  }
+
+  .table-header {
+    flex-direction: column; /* Stack header items on smaller screens */
+    align-items: flex-start; /* Align items to the start */
+  }
+
+  .search-add-container {
+    width: 100%; /* Make the container full width */
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+  }
+
+  input[type="text"] {
+    width: 100%; /* Full width for input fields */
+    min-width: 150px; /* Maintain minimum width */
+    max-width: none; /* Remove max-width to allow flexibility */
+  }
+
+  button {
+    width: auto; /* Adjust button width */
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 5px; /* Reduce padding on smaller screens */
+  }
+
+  .table-header h2 {
+    font-size: 14px; /* Adjusted font size for smaller screens */
+  }
+
+  .content-item h3 {
+    font-size: 12px; /* Smaller font for better fit */
+  }
+}
 </style>
+

@@ -249,5 +249,73 @@ export const dashboardRepository = {
     }
   },
 
+  async deleteSupplier(id) {
+    try {
+      const response = await apiSource.deleteSupplier(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteSupplier:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteSupplier by id');
+    }
+  },
+
+  async deleteCustomer(id) {
+    try {
+      const response = await apiSource.deleteCustomer(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteCustomer:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteCustomer by id');
+    }
+  },
+
+  async deletePayment(id) {
+    try {
+      const response = await apiSource.deletePayment(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deletePayment:', error.message);
+      throw new Error(error.message || 'Failed to delete deletePayment by id');
+    }
+  },
+
+  async deleteBank(id) {
+    try {
+      const response = await apiSource.deleteBank(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteBank:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteBank by id');
+    }
+  },
+
+  async addCompanyAccount(accountRequest) {
+    try {
+      console.log('dashboardRepository', accountRequest);
+      const response = await apiSource.addCompanyAccount(accountRequest)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.addCompanyAccount:', accountRequest, ":::::", error);
+      throw new Error(error.message || 'Failed to add account');
+    }
+  },
+
+  async addCompanyPhoneNumber(phoneNumber) {
+    try {
+      console.log('dashboardRepository', phoneNumber);
+      const response = await apiSource.addCompanyPhoneNumber(phoneNumber)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.addCompanyPhoneNumber:', phoneNumber, ":::::", error);
+      throw new Error(error.message || 'Failed to add phone');
+    }
+  },
+
 };
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="payment-container">
+  <div class="admin-container">
     <section class="info-card">
       <div class="card small-card">
         <img src="@/assets/ic_signal.svg" alt="Card Image" class="card-image" />
@@ -59,7 +59,7 @@
 
 <script setup>
 
-import { ref, computed, onMounted, watchEffect } from 'vue';
+import { ref, computed, onMounted, watchEffect, nextTick } from 'vue';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
@@ -85,8 +85,10 @@ const addAdmin = () => showForm.value = true;
 
 watchEffect(() => {
   if (isAlteration.value === true) {
-    onMountedHandler()
-    isAlteration.value === false;
+    nextTick(() => {
+      onMountedHandler();
+      isAlteration.value = false;
+    });
   }
 });
 
@@ -206,7 +208,7 @@ const deleteRecord = async (admin) => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
 
-.payment-container {
+.admin-container {
   display: flex;
   flex-direction: column;
   padding-top: 20px;
@@ -232,6 +234,7 @@ const deleteRecord = async (admin) => {
   align-items: center;
   padding: 10px;
   gap: 10px;
+  width: 100%; /* Make the card full width on smaller screens */
   max-width: 300px;
 }
 
@@ -279,20 +282,9 @@ const deleteRecord = async (admin) => {
   padding: 5px 0;
 }
 
-.content-item h3 {
-  font-size: 14px;
-  color: black;
-  margin: 0;
-}
-
-.content-item span {
-  font-size: 16px;
-  color: black;
-  font-weight: bold;
-}
-
 .table-container {
   margin-top: 20px;
+  overflow-x: auto; /* Ensure table scrolls on smaller screens */
 }
 
 .table-header {
@@ -302,6 +294,7 @@ const deleteRecord = async (admin) => {
   padding-top: 20px;
   padding-left: 30px;
   padding-right: 30px;
+  flex-wrap: wrap; /* Allows items to wrap on smaller screens */
 }
 
 .table-header h2 {
@@ -390,5 +383,38 @@ th {
   width: 80%;
   max-width: 600px;
   position: relative;
+}
+
+/* Media queries for responsiveness */
+@media screen and (max-width: 768px) {
+  .payment-container {
+    padding: 10px;
+  }
+
+  .info-card {
+    flex-direction: column;
+  }
+
+  .card {
+    width: 100%; /* Full width for cards on small screens */
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  table {
+    font-size: 12px; /* Smaller font size for mobile */
+  }
+
+  th, td {
+    padding: 10px;
+  }
+
+  .modal {
+    width: 95%; /* Smaller modal on mobile */
+  }
 }
 </style>

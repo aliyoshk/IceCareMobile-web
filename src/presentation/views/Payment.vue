@@ -35,6 +35,7 @@
             <th>Transaction Date</th>
             <th>Customer Name</th>
             <th>Amount ($)</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -60,6 +61,8 @@
     <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
       :success="apiStatus" />
 
+    <ConfirmDialog v-if="isDialogVisible" :title="dialogTitle" :message="dialogMessage" :show="isDialogVisible"
+      @confirm="handleDelete" @cancel="cancelDialog" />
   </div>
 </template>
 
@@ -67,17 +70,18 @@
 
 <script setup>
 
-import { ref, computed, onMounted, watchEffect } from 'vue';
+import { ref, computed, onMounted, watchEffect, nextTick } from 'vue';
 import imgx from '@/assets/ic_supplier.svg';
 import { customerData } from '@/data/mockData/customerData';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
-import { getPaymentsUseCase, addPaymentUseCase } from '@/domain/useCases/dashboardUseCase';
+import { getPaymentsUseCase, addPaymentUseCase, deletePaymentUseCase } from '@/domain/useCases/dashboardUseCase';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import PaymentForm from '@/presentation/components/PaymentForm.vue';
 import { localStorageSource } from '@/data/sources/localStorage';
 import CustomDialog from '../components/CustomDialog.vue';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
 import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
 import router from '../router';
@@ -87,12 +91,17 @@ const showForm = ref(false);
 const toast = useToast();
 const searchQuery = ref('');
 const getPaymentResponse = ref([]);
+const isEndPointHit = ref(false);
 const totalRecord = ref(0);
 const transactionVolume = ref(0);
 const totalTransaction = ref(0);
 const responseMessage = ref('')
 const apiStatus = ref(false);
 const showApiDialog = ref(false);
+const isDialogVisible = ref(false);
+const dialogTitle = ref('');
+const dialogMessage = ref('');
+const seletedPayment = ref([]);
 
 const cardsData = [
   { image: imgx, title: 'Total No of Customers', value: totalRecord },
@@ -101,10 +110,23 @@ const cardsData = [
 ];
 
 
-const addPayment = () => showForm.value = true;
+watchEffect(() => {
+  if (isEndPointHit.value === true) {
+    nextTick(() => {
+      onMountedHandler();
+      isEndPointHit.value = false;
+    });
+  }
+});
 
 
 onMounted(async () => {
+  onMountedHandler();
+});
+
+const addPayment = () => showForm.value = true;
+
+const onMountedHandler = async () => {
   loading.value = true;
 
   try {
@@ -132,12 +154,12 @@ onMounted(async () => {
   finally {
     loading.value = false;
   }
-});
+};
 
 
 const filteredPayments = computed(() => {
   return Array.isArray(getPaymentResponse.value) ? getPaymentResponse.value.filter(payment =>
-  payment.customerName.toLowerCase().includes(searchQuery.value.toLowerCase())
+    payment.customerName.toLowerCase().includes(searchQuery.value.toLowerCase())
   ) : [];
 });
 
@@ -191,8 +213,43 @@ const handleFormSubmission = async (paymentRequest) => {
 };
 
 const deleteRecord = (payment) => {
-  console.log('Viewing record for:', payment);
-  toast.success('Delete clicked on: ' + payment.id + '-:-' + payment.customerName);
+
+seletedPayment.value = [];
+
+dialogTitle.value = 'Delete Record';
+dialogMessage.value = `Proceeding would delete ${payment.customerName} record`;
+isDialogVisible.value = true;
+
+seletedPayment.value = payment;
+
+console.log('Viewing record for:', payment);
+toast.success('Viewing details for: ' + payment.name);
+};
+
+const cancelDialog = () => {
+  isDialogVisible.value = false;
+  showApiDialog.value = false;
+}
+
+const handleDelete = async () => {
+  isDialogVisible.value = false;
+
+  try {
+    const response = await deletePaymentUseCase(seletedPayment.value.id);
+
+    if (response.success || response.data.success) {
+      isEndPointHit.value = true;
+      showApiDialog.value = true;
+      apiStatus.value = true;
+      responseMessage.value = response.message || "Record deleted Successful";
+    }
+  }
+  catch (error) {
+    console.log('Error occurred:', error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
+  }
 };
 
 const done = () => {
@@ -250,7 +307,14 @@ const exportToExcel = () => {
   padding: 10px;
   gap: 10px;
   max-width: 300px;
+  flex: 1 1 200px; /* Flex to make cards responsive */
 }
+
+.small-card {
+  height: 90px;
+  flex-grow: 1;
+}
+
 
 .card img {
   max-width: 40px;
@@ -277,69 +341,25 @@ const exportToExcel = () => {
   color: black;
 }
 
-.card p,
-.content-item span {
+.card p {
   font-size: 14px;
-  color: black;
-  font-weight: bold;
-}
-
-.small-card {
-  width: 200px;
-  height: 90px;
-  flex-grow: 1;
-}
-
-.large-card {
-  margin-left: 220px;
-  width: 200px;
-  height: 90px;
-  flex-grow: 1;
-}
-
-.large-card .content {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.content-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 5px 0;
-}
-
-.content-item h3 {
-  font-size: 14px;
-  color: black;
-  margin: 0;
-}
-
-.content-item span {
-  font-size: 16px;
   color: black;
   font-weight: bold;
 }
 
 .table-container {
   margin-top: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 20px;
-  padding-left: 30px;
-  padding-right: 30px;
-}
-
-.table-header h2 {
-  margin: 0;
-  font-size: 14px;
+  padding: 20px;
   color: black;
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
 }
 
 .search-add-container {
@@ -368,8 +388,7 @@ button:hover {
   background-color: #452900;
 }
 
-table,
-.table-header {
+table {
   width: 100%;
   border-collapse: collapse;
   background-color: white;
@@ -396,8 +415,6 @@ th {
 
 .delete {
   color: #A90836;
-  border: none;
-  padding: 5px 10px;
   cursor: pointer;
 }
 
@@ -420,5 +437,36 @@ th {
   width: 80%;
   max-width: 600px;
   position: relative;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .info-card {
+    flex-direction: column; /* Stack cards on smaller screens */
+  }
+
+  .large-card {
+    margin-left: 0; /* Remove left margin on smaller screens */
+  }
+
+  .search-add-container {
+    flex-direction: column; /* Stack search and buttons */
+  }
+
+  input[type="text"] {
+    width: 100%; /* Full width for input on small screens */
+  }
+
+  button {
+    width: 100%; /* Full width for buttons on small screens */
+  }
+
+  table {
+    font-size: 12px; /* Smaller font size for tables */
+  }
+
+  th, td {
+    padding: 10px; /* Reduce padding in table cells */
+  }
 }
 </style>

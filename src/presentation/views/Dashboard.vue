@@ -162,9 +162,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watchEffect } from 'vue';
+import { ref, onMounted, watchEffect, nextTick } from 'vue';
 import { Bar, Pie } from 'vue-chartjs';
-import ApexChart from 'vue3-apexcharts';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
 import { fetchDashboardDataUseCase, updateDollarRateUseCase } from '../../domain/useCases/dashboardUseCase';
 import Spinner from '../components/Spinner.vue';
@@ -191,7 +190,7 @@ const loading = ref(false);
 const responseMessage = ref('')
 const apiStatus = ref(false);
 const showApiDialog = ref(false);
-
+const isDollarUpdated = ref(false);
 const showDollarForm = ref(false);
 const metrics = ref([]);
 const availableDollar = ref(0);
@@ -274,11 +273,10 @@ const updateDollar = async () => {
       toast.success(response.message);
 
       if (response.success) {
+        isDollarUpdated.value = true;
         showApiDialog.value = true;
         apiStatus.value = response.success;
         responseMessage.value = response.message;
-
-        refreshDashboard();
       }
 
     }
@@ -295,11 +293,21 @@ const updateDollar = async () => {
   }
 };
 
-const refreshDashboard = () => {
-  router.go()
-};
+
+watchEffect(() => {
+  if (isDollarUpdated.value === true) {
+    nextTick(() => {
+      onMountedHandler();
+      isDollarUpdated.value = false;
+    });
+  }
+});
 
 onMounted(async () => {
+  onMountedHandler();
+});
+
+const onMountedHandler = async () => {
   loading.value = true;
 
   try {
@@ -361,7 +369,7 @@ onMounted(async () => {
   finally {
     loading.value = false;
   }
-});
+};
 
 </script>
 

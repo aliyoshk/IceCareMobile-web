@@ -199,7 +199,6 @@ export const approveTransfer = async (approveTransferRequest) => {
   }
 };
 
-
 export const addAdminUseCase = async (adminRequest) => {
   try {
     console.log('dashboardUseCase', adminRequest);
@@ -230,5 +229,71 @@ export const deleteAdminUseCase = async (id) => {
   catch (error) {
     console.error('Error in dashboardUseCase: deleteAdmin', error.message);
     throw new Error(error.message || 'An error occurred on delete admin');
+  }
+};
+
+export const deleteSupplierUseCase = async (id) => {
+  try {
+    return await dashboardRepository.deleteSupplier(id);
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: deleteSupplierUseCase', error.message);
+    throw new Error(error.message || 'An error occurred on delete supplier');
+  }
+};
+
+export const deleteCustomerUseCase = async (id) => {
+  try {
+    return await dashboardRepository.deleteCustomer(id);
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: deleteCustomer', error.message);
+    throw new Error(error.message || 'An error occurred on delete customer');
+  }
+};
+
+export const deletePaymentUseCase = async (id) => {
+  try {
+    return await dashboardRepository.deletePayment(id);
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: deletePayment', error.message);
+    throw new Error(error.message || 'An error occurred on delete payment');
+  }
+};
+
+export const deleteBankUseCase = async (id) => {
+  try {
+    return await dashboardRepository.deleteBank(id);
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: deleteBank', error.message);
+    throw new Error(error.message || 'An error occurred on delete bank');
+  }
+};
+
+export const addCompanyAccountUseCase = async (accountRequest) => {
+  try {
+    console.log('dashboardUseCase', accountRequest);
+    const response = await dashboardRepository.addCompanyAccount(accountRequest);
+    console.log('Response from API:', response);
+    return response;
+  } 
+  catch (error) {
+    console.log('Error in dashboardUseCase: addCompanyAccountUseCase', error);
+    throw new Error(error.message || 'An error occurred adding account');
+  }
+};
+
+export const addCompanyPhoneUseCase = async (phoneNumber) => {
+  try {
+    console.log('dashboardUseCase', phoneNumber);
+    const response = await dashboardRepository.addCompanyPhoneNumber(phoneNumber);
+    console.log('Response from API:', response);
+    return response;
+  } 
+  catch (error) {
+    console.log('Error in dashboardUseCase: addCompanyPhoneUseCase', error);
+    throw new Error(error.message || 'An error occurred adding phone');
   }
 };

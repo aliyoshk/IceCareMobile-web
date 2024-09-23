@@ -25,4 +25,10 @@ export const API_ENDPOINTS = {
   GET_PENDING_TRANSFER: 'Admin/GetPendingTransfer',
   GET_APPROVED_TRANSFER: 'Admin/GetApprovedTransfer',
   APPROVE_TRANSFER: 'api/Admin/ConfirmTransfer',
+  DELETE_SUPPLIER: (id) => `Supplier/DeleteSupplier/${id}`,
+  DELETE_CUSTOMER: (id) => `Customer/DeleteCustomer/${id}`,
+  DELETE_PAYMENT: (id) => `Payment/DeletePayment/${id}`,
+  DELETE_BANK: (id) => `Bank/DeleteBank/${id}`,
+  ADD_COMPANY_ACCOUNTS: 'Dashboard/AddCompanyAccount',
+  ADD_COMPANY_NUMBERS: 'Dashboard/UpdatePhoneNumbers',
 };

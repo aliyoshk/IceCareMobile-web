@@ -1,117 +1,106 @@
 <template>
     <div class="back-office-container">
-
-        <section class="header-cards">
-            <div class="card header" v-for="(content, index) in headerCardContents" :key="index"
-                :class="{ selected: selectedIndex === index }" @click="selectCard(index, content.title)">
-
-                <img :src="content.icon" alt="icon" class="header-icon" />
-                <div class="header-content">
-                    <h2>{{ content.title }}</h2>
+  
+      <!-- Header Cards Section -->
+      <section class="header-cards">
+        <div class="card header" v-for="(content, index) in headerCardContents" :key="index"
+             :class="{ selected: selectedIndex === index }" @click="selectCard(index, content.title)">
+          <img :src="content.icon" alt="icon" class="header-icon" />
+          <div class="header-content">
+            <h2>{{ content.title }}</h2>
+          </div>
+        </div>
+      </section>
+  
+      <!-- Registration Request Section -->
+      <section class="items-section" v-if="selectedCardName === 'Registration Request'">
+        <div class="item-list" v-for="(item, index) in itemList" :key="index">
+          <div class="items-top">
+            <h3 id="bold-value">{{ item.heading }}</h3>
+            <h3 :class="{ 'approved': item.status === 'Approved', 'pending': item.status === 'Pending' }" id="status">
+              {{ item.status }}
+            </h3>
+          </div>
+          <h5>{{ item.subheading }}</h5>
+          <h5 id="count-section">Total count</h5>
+          <h4 id="bold-value">{{ item.count }}</h4>
+          <hr>
+          <h4 id="view" @click="viewRecord(item.status)">View</h4>
+        </div>
+      </section>
+  
+      <!-- Incoming Transfer Section -->
+      <section class="items-section" v-if="selectedCardName === 'Incoming Transfer'">
+        <div class="item-list" v-for="(item, index) in transferItems" :key="index">
+          <div class="items-top">
+            <h3 id="bold-value">{{ item.heading }}</h3>
+            <h3 :class="{ 'approved': item.status === 'Approved', 'pending': item.status === 'Pending', 'rejected': item.status === 'Rejected' }" id="status">
+              {{ item.status }}
+            </h3>
+          </div>
+          <h5>{{ item.subheading }}</h5>
+          <h5 id="count-section">Total count</h5>
+          <h4 id="bold-value">{{ item.count }}</h4>
+          <hr>
+          <h4 id="view" @click="viewRegistrationRecord(item.status)">View</h4>
+        </div>
+      </section>
+  
+      <!-- Help Section -->
+      <section class="phone-card-section" v-if="selectedCardName === 'Help'">
+        <div class="phone-list">
+          <img src="@/assets/ic_phone.svg" alt="Phone Icon" />
+          <h4>Company Phone Number(s)</h4>
+          <hr id="line">
+          <div v-for="(phone, index) in phoneNumbers" :key="index">
+            <h3>{{ phone }}</h3>
+            <hr id="line">
+          </div>
+          <div class="btn-container">
+            <button class="btn" @click="addNewNumberClick">Add Another Number</button>
+          </div>
+  
+          <div v-if="showPhoneForm" class="modal-overlay">
+            <div class="modal">
+              <form @submit.prevent="addNumber">
+                <div class="form-header">
+                  <button class="close-btn" @click="showPhoneForm = false">&#x2715;</button>
                 </div>
-
-            </div>
-        </section>
-
-        <section class="items-section" v-if="selectedCardName === 'Registration Request'">
-            <div class="item-list" v-for="(item, index) in itemList" :key="index">
-                <div class="items-top">
-                    <h3 id="bold-value">{{ item.heading }}</h3>
-                    <h3 :class="{ 'approved': item.status === 'Approved', 'pending': item.status === 'Pending' }"
-                        id="status">
-                        {{ item.status }}
-                    </h3>
+                <div class="form">
+                  <label for="newPhoneValue">Phone Number</label>
+                  <input type="number" id="newPhoneValue" name="newPhoneValue" v-model="newPhoneValue" required>
+                  <button class="form-btn" type="submit">Save</button>
                 </div>
-                <h5>{{ item.subheading }}</h5>
-
-                <h5 id="count-section">Total count</h5>
-                <h4 id="bold-value">{{ item.count }}</h4>
-                <hr>
-                <h4 id="view" @click="viewRecord(item.status)">View</h4>
+              </form>
             </div>
-        </section>
-
-
-        <section class="items-section" v-if="selectedCardName === 'Incoming Transfer'">
-
-            <div class="item-list" v-for="(item, index) in transferItems" :key="index">
-                <div class="items-top">
-                    <h3 id="bold-value">{{ item.heading }}</h3>
-                    <h3 :class="{ 'approved': item.status === 'Approved', 'pending': item.status === 'Pending', 'rejected': item.status === 'Rejected' }"
-                        id="status">
-                        {{ item.status }}
-                    </h3>
-                </div>
-                <h5>{{ item.subheading }}</h5>
-
-                <h5 id="count-section">Total count</h5>
-                <h4 id="bold-value">{{ item.count }}</h4>
-                <hr>
-                <h4 id="view" @click="viewRegistrationRecord(item.status)">View</h4>
-            </div>
-        </section>
-
-        <section class="phone-card-section" v-if="selectedCardName === 'Help'">
-            <!-- Phone Number Section -->
-            <div class="phone-list">
-                <img src="@/assets/ic_phone.svg">
-                <h4>Company Phone Number(s)</h4>
-                <hr id="line">
-                <div v-for="(phone, index) in phoneNumbers" :key="index">
-                    <h3> {{ phone }} </h3>
-                    <hr id="line">
-                </div>
-                <div class="btn-container">
-                    <button class="btn" @click="addNewNumberClick">Add Another Number </button>
-                </div>
-
-                <!-- Add Phone Number Form -->
-                <div v-if="showPhoneForm" class="modal-overlay">
-                    <div class="modal">
-                        <form @submit.prevent="addNumber">
-
-                            <div class="form-header">
-                                <button class="close-btn" @click="showPhoneForm = false">&#x2715;</button>
-                            </div>
-
-                            <div class="form">
-                                <label for="newPhoneValue">Phone Number</label>
-                                <input type="number" step="0.01" id="newPhoneValue" name="newPhoneValue"
-                                    v-model="newPhoneValue" required>
-                                <button class="form-btn" type="submit">Save</button>
-                            </div>
-
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Email Section -->
-            <div class="phone-list">
-                <img src="@/assets/ic_phone.svg">
-                <h4>Email</h4>
-                <ul>
-                    <li v-for="(phone, index) in phoneNumbers" :key="index">
-                        {{ phone }}
-                    </li>
-                </ul>
-            </div>
-
-            <!-- FAQ Section -->
-            <div class="phone-list">
-                <img src="@/assets/ic_faq.svg">
-                <h4>FAQ</h4>
-                <ul>
-                    <li v-for="(phone, index) in phoneNumbers" :key="index">
-                        {{ phone }}
-                    </li>
-                </ul>
-            </div>
-
-        </section>
-
+          </div>
+        </div>
+  
+        <!-- Email Section -->
+        <div class="phone-list">
+          <img src="@/assets/ic_phone.svg" alt="Email Icon" />
+          <h4>Email</h4>
+          <ul>
+            <li v-for="(phone, index) in phoneNumbers" :key="index">{{ phone }}</li>
+          </ul>
+        </div>
+  
+        <!-- FAQ Section -->
+        <div class="phone-list">
+          <img src="@/assets/ic_faq.svg" alt="FAQ Icon" />
+          <h4>FAQ</h4>
+          <ul>
+            <li v-for="(phone, index) in phoneNumbers" :key="index">{{ phone }}</li>
+          </ul>
+        </div>
+      </section>
+  
+      <Spinner :loading="loading" />
+      <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done" :success="apiStatus" />
+  
     </div>
-</template>
+  </template>
+  
 
 <script setup>
 import { ref, onMounted, watchEffect } from 'vue';
@@ -121,11 +110,16 @@ import 'vue-toastification/dist/index.css';
 import ic_reg from '@/assets/ic_registration.svg';
 import ic_people from '@/assets/ic_people.svg';
 import ic_bag from '@/assets/ic_bag.svg';
+import { localStorageSource } from '@/data/sources/localStorage';
+import { addCompanyPhoneUseCase } from '@/domain/useCases/dashboardUseCase';
+import Spinner from '../components/Spinner.vue';
+import CustomDialog from '../components/CustomDialog.vue';
 
 
 const router = useRouter();
 const toast = useToast();
 const loading = ref(false);
+const showApiDialog = ref(false);
 const headerCardContents = ref([]);
 const itemList = ref([]);
 const selectedIndex = ref(null);
@@ -134,7 +128,7 @@ const transferItems = ref([]);
 const showPhoneForm = ref(false);
 const newPhoneValue = ref('');
 
-const phoneNumbers = ['08102884291', '08039243858', '08182758531', '09014567890']
+const phoneNumbers = ref([]);
 
 headerCardContents.value = [
     { icon: ic_people, title: 'Incoming Transfer' },
@@ -172,6 +166,13 @@ const addNumber = async () => {
 
     showPhoneForm.value = false
     newPhoneValue.value = ''
+
+    try {
+
+    }
+    catch(error) {
+
+    }
 };
 
 const selectCard = (index, content) => {
@@ -182,6 +183,17 @@ const selectCard = (index, content) => {
 onMounted(() => {
     selectedIndex.value = 0;
     selectedCardName.value = 'Incoming Transfer'
+    console.log('Local storage', localStorageSource.getDashboardData());
+
+
+    // const phoneNumbersString = '123456789;987654321;123123123; 123456789; 987654321; 123123123';
+    // const sHolder = phoneNumbersString.split(';').map(phone => phone.trim());
+    // phoneNumbers.value.push(...sHolder);
+
+    console.log('Local storage test', phoneNumbers.value);
+
+    const holder = localStorageSource.getDashboardData().companyPhoneNumbers.split(';').map(phone => phone.trim()) || '';
+    phoneNumbers.value.push(...holder);
 });
 
 </script>
@@ -191,8 +203,7 @@ onMounted(() => {
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
 
 .back-office-container {
-    padding-bottom: 10px;
-    padding-right: 15px;
+    padding: 10px 15px;
     color: black;
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
@@ -200,16 +211,12 @@ onMounted(() => {
 
 .header-cards {
     width: 100%;
-    height: 90px;
+    height: auto;
     margin-bottom: 20px;
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    flex-direction: column;
-}
-
-.card.header:hover {
-    background: #F3B923;
+    justify-content: space-between;
 }
 
 .card.header {
@@ -224,6 +231,7 @@ onMounted(() => {
     cursor: pointer;
     transition: border-color 0.3s;
     border: 2px solid transparent;
+    flex: 1 1 45%; /* Flex item for responsiveness */
 }
 
 .card.header.selected {
@@ -238,29 +246,24 @@ onMounted(() => {
 }
 
 .header-content h2 {
-    display: flex;
-    flex-direction: column;
     font-size: 14px;
 }
 
 .items-section {
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding: 20px 0;
     background-color: rgb(164, 8, 8);
+    display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    display: flex;
     justify-content: space-between;
 }
 
 .item-list {
     background-color: #f9f9f9;
     padding: 15px;
-    margin-left: 10px;
-    margin-right: 10px;
     border-radius: 8px;
-    flex-basis: 40%;
-
+    flex-basis: calc(45% - 20px); /* Adjust for responsiveness */
+    margin: 20px;
 }
 
 .items-top {
@@ -272,8 +275,7 @@ onMounted(() => {
 #status {
     border-radius: 5px;
     margin-top: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 0 10px;
     color: white;
     font-size: 14px;
 }
@@ -315,8 +317,7 @@ hr {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
-    margin-top: 50px;
-    margin-bottom: 20px;
+    margin: 50px 0;
 }
 
 .phone-list {
@@ -324,7 +325,7 @@ hr {
     padding: 15px;
     border-radius: 8px;
     box-sizing: border-box;
-    flex: 1 1 calc(30% - 15px);
+    flex: 1 1 calc(30% - 15px); /* Flex item for responsiveness */
 }
 
 img {
@@ -367,7 +368,6 @@ img {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
@@ -378,19 +378,15 @@ img {
     border-radius: 10px;
     width: 80%;
     max-width: 600px;
-    position: relative;
 }
 
 .form-header {
     display: flex;
-    flex-wrap: wrap;
     flex-direction: column;
-    justify-content: center;
+    align-items: flex-end;
 }
 
 .close-btn {
-    position: absolute;
-    right: 20px;
     border: none;
     padding: 5px 10px;
     cursor: pointer;
@@ -400,10 +396,7 @@ img {
     display: flex;
     flex-direction: column;
     background-color: #fff;
-    margin-top: 20px;
-    margin-left: 20px;
-    margin-right: 20px;
-    margin-bottom: 10px;
+    margin: 20px 20px 10px;
 }
 
 input {
@@ -426,7 +419,6 @@ input {
     align-self: center;
 }
 
-/* Spinner Styling */
 .spinner {
     position: absolute;
     top: 50%;
@@ -439,4 +431,44 @@ input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
+
+/* Media Queries for Responsiveness */
+@media (max-width: 1200px) {
+    .card.header {
+        flex: 1 1 30%; /* Adjust for medium screens */
+    }
+    
+    .item-list {
+        flex-basis: calc(50% - 20px); /* Adjust for medium screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .card.header {
+        flex: 1 1 100%; /* Full width on smaller screens */
+    }
+
+    .item-list {
+        flex-basis: 100%; /* Full width on smaller screens */
+    }
+
+    .phone-list {
+        flex: 1 1 100%; /* Full width for phone lists */
+    }
+
+    .btn {
+        padding: 10px 20%; /* Adjust button padding */
+    }
+}
+
+@media (max-width: 480px) {
+    .header-cards {
+        flex-direction: column; /* Stack cards vertically on very small screens */
+    }
+
+    .btn {
+        width: 80%; /* Wider buttons on small screens */
+    }
+}
+
 </style>

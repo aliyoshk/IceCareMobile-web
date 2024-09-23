@@ -1,5 +1,5 @@
 <template>
-  <div class="payment-container">
+  <div class="bank-container">
     <section class="info-card">
       <div class="card small-card" v-for="(card, index) in cardsData.slice(0, 3)" :key="index">
         <img :src="card.image" alt="Card Image" class="card-image" />
@@ -26,8 +26,8 @@
       </div>
     </section>
 
-    <div class="table-container">
-      <div class="table-header" v-if="onBankChanged && selectedBank !== 'Select Bank'">
+    <div class="table-container" v-if="onBankChanged && selectedBank !== 'Select Bank'">
+      <div class="table-header">
         <h2>{{ onBankChanged }} History</h2>
         <div class="search-add-container">
           <input type="text" v-model="searchQuery" placeholder="Search..." />
@@ -74,6 +74,9 @@
     <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
       :success="apiStatus" />
 
+    <ConfirmDialog v-if="isDialogVisible" :title="dialogTitle" :message="dialogMessage" :show="isDialogVisible"
+      @confirm="handleDelete" @cancel="cancelDialog" />
+
   </div>
 </template>
 
@@ -81,17 +84,18 @@
 
 <script setup>
 
-import { ref, computed, onMounted, watchEffect } from 'vue';
+import { ref, computed, onMounted, watchEffect, nextTick } from 'vue';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
-import { getBankByNameUseCase, addBankUseCase } from '@/domain/useCases/dashboardUseCase';
+import { getBankByNameUseCase, addBankUseCase, deleteBankUseCase } from '@/domain/useCases/dashboardUseCase';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import BankForm from '@/presentation/components/BankForm.vue';
 import signal from '@/assets/ic_signal.svg';
 import naira from '@/assets/ic_naira.svg';
 import bank from '@/assets/ic_bank.svg';
 import CustomDialog from '../components/CustomDialog.vue';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
 import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
 import router from '../router';
@@ -101,7 +105,7 @@ const loading = ref(false);
 const showForm = ref(false);
 const toast = useToast();
 const searchQuery = ref('');
-const isBankAdded = ref(false);
+const isEndPointHit = ref(false);
 const getBankResponse = ref([]);
 const totalRecord = ref(0);
 const transactionVolume = ref(0);
@@ -110,6 +114,10 @@ const onBankChanged = ref('');
 const responseMessage = ref('')
 const apiStatus = ref(false);
 const showApiDialog = ref(false);
+const isDialogVisible = ref(false);
+const dialogTitle = ref('');
+const dialogMessage = ref('');
+const selectedBank = ref([]);
 
 const cardsData = [
   { image: signal, title: 'Total No of Customers', value: totalRecord },
@@ -128,14 +136,14 @@ const addPayment = () => {
   }
 };
 
-
 watchEffect(() => {
-  if (isBankAdded.value === true || onBankChanged.value !== '') {
-    onMountedHandler()
-    isBankAdded.value === false;
+  if (isEndPointHit.value === true) {
+    nextTick(() => {
+      onMountedHandler();
+      isEndPointHit.value = false;
+    });
   }
 });
-
 
 onMounted(async () => {
   if (onBankChanged.value !== '') {
@@ -222,7 +230,7 @@ const handleFormSubmission = async (bankRequest) => {
 
 
     if (response.data.success) {
-      isBankAdded.value = true;
+      isEndPointHit.value = true;
 
       showApiDialog.value = true;
       apiStatus.value = response.data.success;
@@ -237,9 +245,43 @@ const handleFormSubmission = async (bankRequest) => {
 };
 
 const deleteRecord = (bank) => {
+
+  selectedBank.value = [];
+
+  dialogTitle.value = 'Delete Record';
+  dialogMessage.value = `Proceeding would delete ${bank.bankName} record`;
+  isDialogVisible.value = true;
+
+  selectedBank.value = bank;
+
   console.log('Viewing record for:', bank);
-  // toast.success('Delete clicked on: ' + bank.id + '-:-' + payment.bankName);
-  toast.success('Delete clicked on: ' + bank.bankName);
+  toast.success('Viewing details for: ' + bank.bankName);
+};
+
+const cancelDialog = () => {
+  isDialogVisible.value = false;
+  showApiDialog.value = false;
+}
+
+const handleDelete = async () => {
+  isDialogVisible.value = false;
+
+  try {
+    const response = await deleteBankUseCase(selectedBank.value.id);
+
+    if (response.success || response.data.success) {
+      isEndPointHit.value = true;
+      showApiDialog.value = true;
+      apiStatus.value = true;
+      responseMessage.value = response.message || "Record deleted Successful";
+    }
+  }
+  catch (error) {
+    console.log('Error occurred:', error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
+  }
 };
 
 const done = () => {
@@ -277,7 +319,7 @@ const exportToExcel = () => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
 
-.payment-container {
+.bank-container {
   display: flex;
   flex-direction: column;
   padding-top: 20px;
@@ -293,6 +335,7 @@ const exportToExcel = () => {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  justify-content: center;
 }
 
 .card {
@@ -301,9 +344,15 @@ const exportToExcel = () => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  padding: 10px;
+  padding: 15px; /* Increased padding for better aesthetics */
   gap: 10px;
   max-width: 300px;
+  flex: 1 1 200px; /* Responsive card sizing */
+  transition: box-shadow 0.3s ease; /* Smooth shadow transition */
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Elevation on hover */
 }
 
 .card img {
@@ -327,71 +376,35 @@ const exportToExcel = () => {
 }
 
 .card h3 {
-  font-size: 12px;
-  color: black;
+  font-size: 14px; /* Slightly larger font size */
+  color: #333; /* Darker color for better readability */
 }
 
-.card p,
-.content-item span {
+.card p {
   font-size: 14px;
-  color: black;
-  font-weight: bold;
-}
-
-.small-card {
-  width: 200px;
-  height: 90px;
-}
-
-.large-card {
-  margin-left: 220px;
-  width: 200px;
-  height: 90px;
-  flex-grow: 1;
-}
-
-.large-card .content {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.content-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 5px 0;
-}
-
-.content-item h3 {
-  font-size: 14px;
-  color: black;
-  margin: 0;
-}
-
-.content-item span {
-  font-size: 16px;
-  color: black;
+  color: #555; /* Lighter color for secondary text */
   font-weight: bold;
 }
 
 .table-container {
   margin-top: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 20px;
-  padding-left: 30px;
-  padding-right: 30px;
+  padding: 20px;
+  color: #333; /* Consistent color for headers */
 }
 
 .table-header h2 {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px; /* Slightly larger header font size */
   color: black;
-  font-family: 'Inter', sans-serif;
   font-weight: 600;
 }
 
@@ -399,30 +412,31 @@ const exportToExcel = () => {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 10px; /* Added margin for spacing */
 }
 
 input[type="text"] {
-  padding: 5px 10px;
+  padding: 8px 12px; /* Increased padding for inputs */
   border: 1px solid #ccc;
   border-radius: 4px;
+  flex-grow: 1; /* Allow input to take available space */
 }
 
 button {
   background-color: #B6720F;
   color: white;
-  font-family: 'Inter', sans-serif;
   font-weight: 600;
   border: none;
-  padding: 5px 10px;
+  padding: 8px 12px; /* Increased padding for buttons */
   cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth transition */
 }
 
 button:hover {
   background-color: #452900;
 }
 
-table,
-.table-header {
+table {
   width: 100%;
   border-collapse: collapse;
   background-color: white;
@@ -430,7 +444,7 @@ table,
 
 th,
 td {
-  padding: 14px;
+  padding: 16px; /* Increased padding for better spacing */
   border: none;
   color: black;
   text-align: center;
@@ -441,16 +455,14 @@ td {
 }
 
 th {
-  padding: 30px 20px;
-  font-size: 12px;
+  padding: 16px; /* Consistent padding */
+  font-size: 14px; /* Consistent font size */
   text-transform: uppercase;
   font-weight: bold;
 }
 
 .delete {
   color: #A90836;
-  border: none;
-  padding: 5px 10px;
   cursor: pointer;
   text-decoration: underline;
 }
@@ -462,15 +474,11 @@ th {
 
 .credit {
   color: green;
-  padding: 5px 10px;
-  cursor: pointer;
   font-weight: bold;
 }
 
 .debit {
   color: rgb(130, 78, 241);
-  padding: 5px 10px;
-  cursor: pointer;
   font-weight: bold;
 }
 
@@ -495,18 +503,41 @@ th {
   position: relative;
 }
 
-.dropdown-container {
-  position: relative;
+/* Responsive styles */
+@media (max-width: 768px) {
+  .info-card {
+    flex-direction: column; /* Stack cards on smaller screens */
+    align-items: center; /* Center cards */
+  }
+
+  .search-add-container {
+    flex-direction: column; /* Stack search and buttons */
+    align-items: flex-start; /* Align items to the start */
+  }
+
+  input[type="text"] {
+    width: 100%; /* Full width for input */
+  }
+
+  button {
+    width: 100%; /* Full width for buttons */
+  }
+
+  th,
+  td {
+    font-size: 12px; /* Smaller font size for table */
+  }
+
+  .table-header h2 {
+    font-size: 14px; /* Adjusted header font size */
+  }
 }
 
-.dropdown-container select {
-  color: red;
-  border-color: #855105;
-  font-weight: bold;
-  size: 20px;
-}
-
-#bankHeader {
-  margin-left: 20px;
+@media (max-width: 480px) {
+  .card {
+    flex: 1 1 100%; /* Stack cards on smaller screens */
+    max-width: 100%; /* Allow full width */
+  }
 }
 </style>
+

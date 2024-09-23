@@ -1,6 +1,5 @@
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from './apiEndpoints';
-import { supplierRequest } from '@/data/model/supplierRequest';
 
 export const authService = {
   
@@ -253,4 +252,72 @@ export const authService = {
     }
   },
 
+  async deleteSupplier(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_SUPPLIER(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteSupplier:', error);
+      throw error;
+    }
+  },
+
+  async deleteCustomer(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_CUSTOMER(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteCustomer:', error);
+      throw error;
+    }
+  },
+
+
+  async deletePayment(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_PAYMENT(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deletePayment:', error);
+      throw error;
+    }
+  },
+
+  async deleteBank(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_BANK(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteBank:', error);
+      throw error;
+    }
+  },
+
+  async addCompanyAccount(accountRequest) {
+    try {
+      console.log('Sending addCompanyAccount:', accountRequest);
+      const response = await apiClient.post(API_ENDPOINTS.ADD_COMPANY_ACCOUNTS, accountRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService addCompanyAccount:', error);
+      throw error;
+    }
+  },
+
+  async addCompanyPhoneNumber(phoneNumber) {
+    try {
+      console.log('Sending adminRequest:', phoneNumber);
+      const response = await apiClient.post(API_ENDPOINTS.ADD_COMPANY_NUMBERS, phoneNumber);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService addCompanyPhoneNumber:', error);
+      throw error;
+    }
+  },
 };

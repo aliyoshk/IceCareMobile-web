@@ -259,6 +259,74 @@ export const apiSource = {
       handleApiError(error);
     }
   },
+
+  async deleteSupplier(id) {
+    try {
+      const response = await authService.deleteSupplier(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteSupplier:', error);
+      handleApiError(error);
+    }
+  },
+
+  async deleteCustomer(id) {
+    try {
+      const response = await authService.deleteCustomer(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteCustomer:', error);
+      handleApiError(error);
+    }
+  },
+
+  async deletePayment(id) {
+    try {
+      const response = await authService.deletePayment(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deletePayment:', error);
+      handleApiError(error);
+    }
+  },
+
+  async deleteBank(id) {
+    try {
+      const response = await authService.deleteBank(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteBank:', error);
+      handleApiError(error);
+    }
+  },
+
+  async addCompanyAccount(accountRequest) {
+    try {
+      console.log('apiSource', accountRequest);
+      const response = await authService.addCompanyAccount(accountRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource addCompanyAccount:', error);
+      handleApiError(error);
+    }
+  },
+
+  async addCompanyPhoneNumber(phoneNumber) {
+    try {
+      console.log('apiSource', phoneNumber);
+      const response = await authService.addCompanyPhoneNumber(phoneNumber);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource addCompanyPhoneNumber:', error);
+      handleApiError(error);
+    }
+  },
   
 };
 

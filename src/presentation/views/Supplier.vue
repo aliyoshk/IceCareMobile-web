@@ -54,7 +54,7 @@
             <td>{{ supplier.dollarRate }}</td>
             <td>{{ formatCurrency(supplier.dollarAmount, 'USD') }}</td>
             <td>{{ supplier.modeOfPayment }}</td>
-            <td class="view" @click="viewRecord(supplier)">View Details</td>
+            <td class="delete" @click="deleteRecord(supplier)">Delete Supplier</td>
           </tr>
         </tbody>
       </table>
@@ -74,20 +74,24 @@
     <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
       :success="apiStatus" />
 
+    <ConfirmDialog v-if="isDialogVisible" :title="dialogTitle" :message="dialogMessage" :show="isDialogVisible"
+      @confirm="handleDelete" @cancel="cancelDialog" />
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watchEffect } from 'vue';
+import { ref, computed, onMounted, watchEffect, nextTick } from 'vue';
 import { supplierData } from '@/data/mockData/supplierData';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
 import SupplierForm from '@/presentation/components/SupplierForm.vue';
-import { getSuppliersUseCase, addSupplierUseCase } from '@/domain/useCases/dashboardUseCase';
+import { getSuppliersUseCase, addSupplierUseCase, deleteSupplierUseCase } from '@/domain/useCases/dashboardUseCase';
 import { supplierRequest } from '../../data/model/supplierRequest';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import CustomDialog from '../components/CustomDialog.vue';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
 import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
 import signal from '@/assets/ic_signal.svg';
@@ -100,7 +104,7 @@ const searchQuery = ref('');
 const suppliers = ref(supplierData);
 const toast = useToast();
 const loading = ref(false);
-const isSupplierAdded = ref(false);
+const isEndPointHit = ref(false);
 const totalAmount = ref('');
 const totalDollar = ref('');
 const totalSuppliers = ref('');
@@ -108,13 +112,19 @@ const errorMessage = ref('');
 const responseMessage = ref('')
 const apiStatus = ref(false);
 const showApiDialog = ref(false);
+const isDialogVisible = ref(false);
+const dialogTitle = ref('');
+const dialogMessage = ref('');
+const seletedSupplier = ref([]);
+
+
 
 
 const cardsData = [
   { image: signal, title: 'Total No of Suppliers', value: totalSuppliers || '0' },
   { image: signal, title: 'Transaction Count', value: totalSuppliers || '0' },
   { image: naira, title: 'Transaction Volume', value: totalAmount },
-  { image: '', title: 'Dollar Rate', value: totalDollar, additionalValue: totalAmount}
+  { image: '', title: 'Dollar Rate', value: totalDollar, additionalValue: totalAmount }
 ];
 
 const validateFormField = (supplierRequest) => {
@@ -189,7 +199,7 @@ const handleFormSubmission = async (supplierRequest) => {
     const response = await addSupplierUseCase(supplierRequestData);
 
     if (response.success || response.data.success) {
-      isSupplierAdded.value = true;
+      isEndPointHit.value = true;
 
       showApiDialog.value = true;
       apiStatus.value = response.success;
@@ -205,14 +215,48 @@ const handleFormSubmission = async (supplierRequest) => {
   }
 };
 
-const done = () => {
-  showApiDialog.value = false;
-};
+const deleteRecord = (supplier) => {
 
-const viewRecord = (supplier) => {
+  seletedSupplier.value = [];
+
+  dialogTitle.value = 'Approve Transfer';
+  dialogMessage.value = `Proceeding would mark ${supplier.name} transfer as confirmed`;
+  isDialogVisible.value = true;
+  
+  seletedSupplier.value = supplier;
+
   console.log('Viewing record for:', supplier);
   toast.success('Viewing details for: ' + supplier.name);
-  // Implement navigation or modal display
+};
+
+const cancelDialog = () => {
+  isDialogVisible.value = false;
+  showApiDialog.value = false;
+}
+
+const handleDelete = async () => {
+  isDialogVisible.value = false;
+  try {
+    console.log('Deleting record of:', seletedSupplier.value);
+    const response = await deleteSupplierUseCase(seletedSupplier.value.id);
+
+    if (response.success || response.data.success) {
+      isEndPointHit.value = true;
+      showApiDialog.value = true;
+      apiStatus.value = true;
+      responseMessage.value = response.message || "Record deleted Successful";
+    }
+  }
+  catch (error) {
+    console.log('Error occurred:', error.message);
+    showApiDialog.value = true;
+    apiStatus.value = false;
+    responseMessage.value = error.message;
+  }
+};
+
+const done = () => {
+  showApiDialog.value = false;
 };
 
 const addSupplier = () => {
@@ -226,10 +270,13 @@ const filteredSuppliers = computed(() => {
   );
 });
 
+
 watchEffect(() => {
-  if (isSupplierAdded.value === true) {
-    onMountedHandler()
-    isSupplierAdded.value === false;
+  if (isEndPointHit.value === true) {
+    nextTick(() => {
+      onMountedHandler();
+      isEndPointHit.value = false;
+    });
   }
 });
 
@@ -266,7 +313,7 @@ const rows = computed(() =>
     index + 1,
     formatDate(supplier.date),
     supplier.name,
-    "#"+supplier.amount,
+    "#" + supplier.amount,
     supplier.dollarRate,
     formatCurrency(supplier.dollarAmount, 'USD'),
     supplier.modeOfPayment,
@@ -485,7 +532,7 @@ th {
   color: black;
 }
 
-.view {
+.delete {
   color: #A90836;
   border: none;
   padding: 5px 10px;
@@ -524,5 +571,4 @@ th {
   padding: 5px 10px;
   cursor: pointer;
 }
-
 </style>
