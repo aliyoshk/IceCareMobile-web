@@ -317,5 +317,17 @@ export const dashboardRepository = {
     }
   },
 
+  async completeCustomerPayment(customerPaymentRequest) {
+    try {
+      console.log('dashboardRepository', customerPaymentRequest);
+      const response = await apiSource.completeCustomerPayment(customerPaymentRequest)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.completeCustomerPayment:', customerPaymentRequest, ":::::", error);
+      throw new Error(error.message || 'Failed to add customer payment');
+    }
+  },
+
 };
 

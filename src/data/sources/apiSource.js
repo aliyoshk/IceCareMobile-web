@@ -327,6 +327,18 @@ export const apiSource = {
       handleApiError(error);
     }
   },
+
+  async completeCustomerPayment(customerPaymentRequest) {
+    try {
+      console.log('apiSource', customerPaymentRequest);
+      const response = await authService.completeCustomerPayment(customerPaymentRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource completeCustomerPayment:', error);
+      handleApiError(error);
+    }
+  },
   
 };
 

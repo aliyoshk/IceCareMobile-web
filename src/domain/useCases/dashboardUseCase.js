@@ -297,3 +297,16 @@ export const addCompanyPhoneUseCase = async (phoneNumber) => {
     throw new Error(error.message || 'An error occurred adding phone');
   }
 };
+
+export const completeCustomerPaymentUseCase = async (customerPaymentRequest) => {
+  try {
+    console.log('dashboardUseCase', customerPaymentRequest);
+    const response = await dashboardRepository.completeCustomerPayment(customerPaymentRequest);
+    console.log('Response from API:', response);
+    return response;
+  } 
+  catch (error) {
+    console.log('Error in dashboardUseCase: completeCustomerPaymentUseCase', error);
+    throw new Error(error.message || 'An error occurred adding customer payment');
+  }
+};

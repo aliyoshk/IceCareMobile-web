@@ -204,8 +204,6 @@ const handleFormSubmission = async (supplierRequest) => {
       showApiDialog.value = true;
       apiStatus.value = response.success;
       responseMessage.value = response.message;
-
-      router.go();
     }
   }
   catch (error) {

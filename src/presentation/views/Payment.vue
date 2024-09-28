@@ -202,7 +202,6 @@ const handleFormSubmission = async (paymentRequest) => {
       showApiDialog.value = true;
       apiStatus.value = response.success;
       responseMessage.value = response.message || "Record added Successful";
-      router.go();
     }
   }
   catch (error) {

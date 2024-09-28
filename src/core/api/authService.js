@@ -320,4 +320,16 @@ export const authService = {
       throw error;
     }
   },
+
+  async completeCustomerPayment(customerPaymentRequest) {
+    try {
+      console.log('Sending customerPaymentRequest:', customerPaymentRequest);
+      const response = await apiClient.post(API_ENDPOINTS.COMPLETE_CUSTOMER_PAYMENT, customerPaymentRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService completeCustomerPayment:', error);
+      throw error;
+    }
+  },
 };

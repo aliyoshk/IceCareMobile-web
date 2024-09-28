@@ -57,10 +57,30 @@
             <td>{{ formatCurrency(customer.dollarAmount, 'USD') }}</td>
             <td>{{ customer.paymentCurrency }}</td>
             <td>{{ customer.modeOfPayment }}</td>
-            <td class="delete" @click="deleteRecord(customer)">Delete Customer</td>
+            <td class="done" @click="complete(customer)">Complete</td>
+            <td class="delete" @click="deleteRecord(customer)">Delete</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+
+    <div v-if="showCompletionForm" class="modal-overlay">
+      <div class="modal">
+        <form @submit.prevent="completePayment">
+
+          <div class="completion-form-header">
+            <!-- <label for="upshoreCharges">Enter charges rate for {{ seletedCustomer.name }}</label> -->
+            <button class="close" @click="showCompletionForm = false">&#x2715;</button>
+          </div>
+
+          <div class="completion-form">
+            <label for="upshoreCharges" class="chargeText">Charge($) for {{ seletedCustomer.name }}</label>
+            <input type="number" step="0.01" id="upshoreCharges" name="upshoreCharges" v-model="upshoreCharges">
+            <button class="dollar-button" type="submit">Proceed</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <div v-if="showForm" class="modal-overlay">
@@ -72,9 +92,11 @@
 
     <Spinner :loading="loading" />
 
-    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done" :success="apiStatus" />
+    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
+      :success="apiStatus" />
 
-    <ConfirmDialog v-if="isDialogVisible" :title="dialogTitle" :message="dialogMessage" :show="isDialogVisible" @confirm="handleDelete" @cancel="cancelDialog" />
+    <ConfirmDialog v-if="isDialogVisible" :title="dialogTitle" :message="dialogMessage" :show="isDialogVisible"
+      @confirm="handleDelete" @cancel="cancelDialog" />
   </div>
 </template>
 
@@ -86,7 +108,7 @@ import { customerData } from '@/data/mockData/customerData';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
-import { getCustomersUseCase, addCustomerUseCase, deleteCustomerUseCase } from '@/domain/useCases/dashboardUseCase';
+import { getCustomersUseCase, addCustomerUseCase, deleteCustomerUseCase, completeCustomerPaymentUseCase } from '@/domain/useCases/dashboardUseCase';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import CustomerForm from '@/presentation/components/CustomerForm.vue';
 import { localStorageSource } from '@/data/sources/localStorage';
@@ -115,6 +137,8 @@ const isDialogVisible = ref(false);
 const dialogTitle = ref('');
 const dialogMessage = ref('');
 const seletedCustomer = ref([]);
+const showCompletionForm = ref(false);
+const upshoreCharges = ref('');
 
 const cardsData = [
   { image: signal, title: 'Total No of Customers', value: totalCustomers },
@@ -129,6 +153,56 @@ const filteredCustomers = computed(() => {
     customer.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
+
+const complete = (customer) => {
+  seletedCustomer.value = [];
+  if (localStorageSource.getDashboardData().availableDollarAmount < customer.dollarAmount) {
+    showCompletionForm.value = true;
+  }
+  else {
+    alert('There is no suffiecient dollar to complete customer payment');
+  }
+};
+
+const completePayment = async () => {
+  if (upshoreCharges.value !== '' && upshoreCharges.value > 0) {
+    console.log(upshoreCharges.value + "has been added");
+
+    loading.value = true;
+
+    const completeCustomerRequest = {
+      customerId: seletedCustomer.value.id,
+      dollarAmount: seletedCustomer.value.dollarAmount,
+      phoneNumber: seletedCustomer.value.phoneNumber,
+      charges: upshoreCharges.value
+    };
+
+    try {
+      const response = await completeCustomerPaymentUseCase(completeCustomerRequest);
+      console.log("Complete customer payment response", response)
+
+      upshoreCharges.value = '';
+      showCompletionForm.value = false;
+
+      if (response.data.success) {
+        isEndPointHit.value = true;
+        showApiDialog.value = true;
+        apiStatus.value = response.data.success;
+        responseMessage.value = response.data.message;
+      }
+    }
+    catch (error) {
+      showApiDialog.value = true;
+      apiStatus.value = false;
+      responseMessage.value = error.message;
+    } finally {
+      loading.value = false;
+    }
+  }
+  else {
+    toast.success("Field should not be empty and should be greather than 0");
+  }
+};
 
 const deleteRecord = (customer) => {
 
@@ -248,9 +322,6 @@ const validateFormField = (customerRequest) => {
   } else if (customerRequest.amountDollar === '') {
     toast.success('Enter amount of dollar');
     return false;
-  } else if (localStorageSource.getDashboardData().availableDollarAmount < customerRequest.amountDollar) {
-    alert('There is no suffiecient dollar to complete');
-    return false;
   }
 
   return true;
@@ -296,8 +367,6 @@ const handleFormSubmission = async (customerRequest) => {
       showApiDialog.value = true;
       apiStatus.value = response.success;
       responseMessage.value = response.message || "Record added Successful";
-
-      router.go();
     }
   }
   catch (error) {
@@ -364,7 +433,7 @@ const exportToExcel = () => {
   padding: 10px;
   gap: 10px;
   max-width: 300px;
-  flex: 1 1 200px; /* Make card responsive */
+  flex: 1 1 200px;
 }
 
 .card img {
@@ -443,7 +512,7 @@ const exportToExcel = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 30px; /* Combined padding for consistency */
+  padding: 20px 30px;
 }
 
 .table-header h2 {
@@ -458,16 +527,16 @@ const exportToExcel = () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: nowrap; /* Ensure elements don't wrap */
+  flex-wrap: nowrap;
 }
 
 input[type="text"] {
   padding: 5px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  flex: 1; /* Allow input to grow */
-  min-width: 150px; /* Set a minimum width */
-  max-width: 300px; /* Set a maximum width */
+  flex: 1;
+  min-width: 150px;
+  max-width: 300px;
 }
 
 button {
@@ -517,6 +586,12 @@ th {
   cursor: pointer;
 }
 
+.done {
+  color: green;
+  cursor: pointer;
+  font-weight: bold;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -550,67 +625,124 @@ th {
   cursor: pointer;
 }
 
-/* Media Queries for Responsiveness */
+.completion-form-header {
+  display: flex;
+  top: 0;
+  left: 0;
+  padding: 5px 20px;
+  color: black;
+}
+
+.completion-form {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 80vh;
+  margin-top: 15px;
+  margin-bottom: 50px;
+  margin-left: 20%;
+  margin-right: 20%;
+}
+
+.completion-form input {
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: black;
+  height: 60px;
+}
+
+.close {
+  position: absolute;
+  right: 20px;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.chargeText {
+  color: black;
+  padding-bottom: 20px;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
 @media (max-width: 1024px) {
   .large-card {
-    margin-left: 20px; /* Reduce margin for medium screens */
-    width: calc(100% - 40px); /* Adjust width to fill space */
+    margin-left: 20px;
+    width: calc(100% - 40px);
   }
 
   .table-header {
-    flex-direction: column; /* Stack header items on smaller screens */
-    align-items: flex-start; /* Align items to the start */
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
 @media (max-width: 768px) {
   .info-card {
-    flex-direction: column; /* Stack cards on smaller screens */
-    align-items: center; /* Center alignment for better aesthetics */
+    flex-direction: column;
+    align-items: center;
   }
 
   .large-card {
-    margin-left: 0; /* Remove left margin on smaller screens */
-    width: 100%; /* Full width for large cards */
+    margin-left: 0;
+    width: 100%;
   }
 
   .card {
-    max-width: 100%; /* Allow cards to use full width */
+    max-width: 100%;
   }
 
   .table-header {
-    flex-direction: column; /* Stack header items on smaller screens */
-    align-items: flex-start; /* Align items to the start */
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .search-add-container {
-    width: 100%; /* Make the container full width */
-    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    width: 100%;
+    flex-wrap: wrap;
   }
 
   input[type="text"] {
-    width: 100%; /* Full width for input fields */
-    min-width: 150px; /* Maintain minimum width */
-    max-width: none; /* Remove max-width to allow flexibility */
+    width: 100%;
+    min-width: 150px;
+    max-width: none;
   }
 
   button {
-    width: auto; /* Adjust button width */
+    width: auto;
+  }
+
+  .completion-form {
+    margin-left: 10%;
+    margin-right: 10%;
   }
 }
 
 @media (max-width: 480px) {
   .card {
-    padding: 5px; /* Reduce padding on smaller screens */
+    padding: 5px;
   }
 
   .table-header h2 {
-    font-size: 14px; /* Adjusted font size for smaller screens */
+    font-size: 14px;
   }
 
   .content-item h3 {
-    font-size: 12px; /* Smaller font for better fit */
+    font-size: 12px;
+  }
+
+  .completion-form {
+    margin-left: 5%;
+    margin-right: 5%;
   }
 }
 </style>
-
