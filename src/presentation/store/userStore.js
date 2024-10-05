@@ -34,6 +34,7 @@ export const useUserStore = defineStore('user', {
       localStorage.removeItem('user');
       localStorageSource.clearUserData();
       localStorageSource.clearDashboardData();
+      localStorageSource.clearComapanyAccountData();
     },
     clearError() {
       this.error = null;

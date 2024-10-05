@@ -45,5 +45,8 @@
     margin-top: 8px;
     font-size: 16px;
   }
+  h2, p {
+    align-content: center;
+  }
   </style>
   

@@ -98,7 +98,9 @@ import CustomDialog from '../components/CustomDialog.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
+import { localStorageSource } from '@/data/sources/localStorage';
 import router from '../router';
+import EmptyState from '../components/EmptyState.vue';
 
 
 const loading = ref(false);
@@ -118,16 +120,13 @@ const isDialogVisible = ref(false);
 const dialogTitle = ref('');
 const dialogMessage = ref('');
 const selectedBank = ref([]);
+const banks = ref([]);
 
 const cardsData = [
   { image: signal, title: 'Total No of Customers', value: totalRecord },
   { image: signal, title: 'Transaction Count', value: totalRecord },
   { image: naira, title: 'Total Amount', value: totalTransaction },
   { image: bank, title: 'Bank', value: totalTransaction },
-];
-
-const banks = [
-  { name: 'Wema Bank' }, { name: 'Jaiz Bank' }, { name: 'Union Bank' }, { name: 'UBA Bank' },
 ];
 
 const addPayment = () => {
@@ -137,7 +136,7 @@ const addPayment = () => {
 };
 
 watchEffect(() => {
-  if (isEndPointHit.value === true) {
+  if (isEndPointHit.value === true || onBankChanged.value !== '') {
     nextTick(() => {
       onMountedHandler();
       isEndPointHit.value = false;
@@ -146,13 +145,20 @@ watchEffect(() => {
 });
 
 onMounted(async () => {
-  if (onBankChanged.value !== '') {
-    onMountedHandler();
-  }
+  
+  const dashboardData = localStorageSource.getDashboardData();
+  if (dashboardData && dashboardData.companyAccounts) {
+    banks.value = dashboardData.companyAccounts.map(account => ({
+      name: account.bankName
+    }));
+  };
+
+  
 });
 
 const onMountedHandler = async () => {
   loading.value = true;
+
   totalRecord.value = 0;
   totalTransaction.value = formatCurrency(0, 'NGN');
   getBankResponse.value = ref([]);
@@ -344,15 +350,19 @@ const exportToExcel = () => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  padding: 15px; /* Increased padding for better aesthetics */
+  padding: 15px;
+  /* Increased padding for better aesthetics */
   gap: 10px;
   max-width: 300px;
-  flex: 1 1 200px; /* Responsive card sizing */
-  transition: box-shadow 0.3s ease; /* Smooth shadow transition */
+  flex: 1 1 200px;
+  /* Responsive card sizing */
+  transition: box-shadow 0.3s ease;
+  /* Smooth shadow transition */
 }
 
 .card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Elevation on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* Elevation on hover */
 }
 
 .card img {
@@ -376,13 +386,16 @@ const exportToExcel = () => {
 }
 
 .card h3 {
-  font-size: 14px; /* Slightly larger font size */
-  color: #333; /* Darker color for better readability */
+  font-size: 14px;
+  /* Slightly larger font size */
+  color: #333;
+  /* Darker color for better readability */
 }
 
 .card p {
   font-size: 14px;
-  color: #555; /* Lighter color for secondary text */
+  color: #555;
+  /* Lighter color for secondary text */
   font-weight: bold;
 }
 
@@ -398,12 +411,14 @@ const exportToExcel = () => {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  color: #333; /* Consistent color for headers */
+  color: #333;
+  /* Consistent color for headers */
 }
 
 .table-header h2 {
   margin: 0;
-  font-size: 16px; /* Slightly larger header font size */
+  font-size: 16px;
+  /* Slightly larger header font size */
   color: black;
   font-weight: 600;
 }
@@ -412,14 +427,17 @@ const exportToExcel = () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px; /* Added margin for spacing */
+  margin-bottom: 10px;
+  /* Added margin for spacing */
 }
 
 input[type="text"] {
-  padding: 8px 12px; /* Increased padding for inputs */
+  padding: 8px 12px;
+  /* Increased padding for inputs */
   border: 1px solid #ccc;
   border-radius: 4px;
-  flex-grow: 1; /* Allow input to take available space */
+  flex-grow: 1;
+  /* Allow input to take available space */
 }
 
 button {
@@ -427,9 +445,11 @@ button {
   color: white;
   font-weight: 600;
   border: none;
-  padding: 8px 12px; /* Increased padding for buttons */
+  padding: 8px 12px;
+  /* Increased padding for buttons */
   cursor: pointer;
-  transition: background-color 0.3s ease; /* Smooth transition */
+  transition: background-color 0.3s ease;
+  /* Smooth transition */
 }
 
 button:hover {
@@ -444,7 +464,8 @@ table {
 
 th,
 td {
-  padding: 16px; /* Increased padding for better spacing */
+  padding: 16px;
+  /* Increased padding for better spacing */
   border: none;
   color: black;
   text-align: center;
@@ -455,8 +476,10 @@ td {
 }
 
 th {
-  padding: 16px; /* Consistent padding */
-  font-size: 14px; /* Consistent font size */
+  padding: 16px;
+  /* Consistent padding */
+  font-size: 14px;
+  /* Consistent font size */
   text-transform: uppercase;
   font-weight: bold;
 }
@@ -506,38 +529,47 @@ th {
 /* Responsive styles */
 @media (max-width: 768px) {
   .info-card {
-    flex-direction: column; /* Stack cards on smaller screens */
-    align-items: center; /* Center cards */
+    flex-direction: column;
+    /* Stack cards on smaller screens */
+    align-items: center;
+    /* Center cards */
   }
 
   .search-add-container {
-    flex-direction: column; /* Stack search and buttons */
-    align-items: flex-start; /* Align items to the start */
+    flex-direction: column;
+    /* Stack search and buttons */
+    align-items: flex-start;
+    /* Align items to the start */
   }
 
   input[type="text"] {
-    width: 100%; /* Full width for input */
+    width: 100%;
+    /* Full width for input */
   }
 
   button {
-    width: 100%; /* Full width for buttons */
+    width: 100%;
+    /* Full width for buttons */
   }
 
   th,
   td {
-    font-size: 12px; /* Smaller font size for table */
+    font-size: 12px;
+    /* Smaller font size for table */
   }
 
   .table-header h2 {
-    font-size: 14px; /* Adjusted header font size */
+    font-size: 14px;
+    /* Adjusted header font size */
   }
 }
 
 @media (max-width: 480px) {
   .card {
-    flex: 1 1 100%; /* Stack cards on smaller screens */
-    max-width: 100%; /* Allow full width */
+    flex: 1 1 100%;
+    /* Stack cards on smaller screens */
+    max-width: 100%;
+    /* Allow full width */
   }
 }
 </style>
-

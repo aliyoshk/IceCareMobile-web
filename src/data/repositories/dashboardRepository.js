@@ -329,5 +329,16 @@ export const dashboardRepository = {
     }
   },
 
+  async deleteCompanyAccount(id) {
+    try {
+      const response = await apiSource.deleteCompanyAccount(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteCompanyAccount:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteCompanyAccount by id');
+    }
+  },
+
 };
 

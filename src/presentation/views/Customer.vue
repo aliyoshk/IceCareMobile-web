@@ -43,6 +43,7 @@
             <th>Rate</th>
             <th>Amount (Dollar)</th>
             <th>Payment Currency</th>
+            <th>Balance</th>
             <th>Mode of Payment</th>
             <th>Action</th>
           </tr>
@@ -53,9 +54,10 @@
             <td>{{ formatDate(customer.date) }}</td>
             <td>{{ customer.name }}</td>
             <td>{{ formatCurrency(customer.amount, 'NGN') }}</td>
-            <td>{{ customer.dollarRate }}</td>
+            <td>{{ formatCurrency(customer.dollarRate) }}</td>
             <td>{{ formatCurrency(customer.dollarAmount, 'USD') }}</td>
             <td>{{ customer.paymentCurrency }}</td>
+            <td>{{ formatCurrency(customer.balance) }}</td>
             <td>{{ customer.modeOfPayment }}</td>
             <td class="done" @click="complete(customer)">Complete</td>
             <td class="delete" @click="deleteRecord(customer)">Delete</td>

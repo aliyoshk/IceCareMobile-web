@@ -310,3 +310,13 @@ export const completeCustomerPaymentUseCase = async (customerPaymentRequest) => 
     throw new Error(error.message || 'An error occurred adding customer payment');
   }
 };
+
+export const deleteCompanyAccountUseCase = async (id) => {
+  try {
+    return await dashboardRepository.deleteCompanyAccount(id);
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: deleteCompanyAccount', error.message);
+    throw new Error(error.message || 'An error occurred on deleteCompanyAccount');
+  }
+};

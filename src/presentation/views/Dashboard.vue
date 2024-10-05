@@ -315,6 +315,7 @@ const onMountedHandler = async () => {
     console.log('Dashboard data:', dashboardData);
 
     localStorageSource.savedDashboardData(dashboardData.data);
+    localStorageSource.savedCompanyAccount(dashboardData.data.companyAccounts);
     store.setName(dashboardData.data.adminName);
 
     // Initialize monthly income array
@@ -337,10 +338,10 @@ const onMountedHandler = async () => {
     // }];
 
     metrics.value = dashboardData.metrics || [
-      { title: 'All Time Earnings', value: formatCurrency(dashboardData.data.totalTransferredAmount) || '0', icon: ic_image },
+      { title: 'Current Month Earnings', value: formatCurrency(dashboardData.data.totalMonthlyNairaTransfer) || formatCurrency(0), icon: ic_image },
       { title: 'Total No of Transactions', value: '1,500', icon: ic_image },
       { title: 'Received Today', value: formatCurrency('0.00'), icon: ic_image },
-      { title: 'No of Customers', value: dashboardData.data.numberOfCustomers || '0', icon: ic_image },
+      { title: 'Monthly Dollar Spent', value: formatCurrency(dashboardData.data.totalMonthlyDollarSpent, 'USD') || formatCurrency(0, 'USD'), icon: ic_image },
     ];
 
     availableDollar.value = formatCurrency(dashboardData.data.availableDollarAmount, 'USD') || '';

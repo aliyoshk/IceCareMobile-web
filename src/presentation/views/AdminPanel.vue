@@ -162,10 +162,7 @@ const handleFormSubmission = async (data) => {
     };
 
     console.log('This is the content of:', adminRequest);
-
     const response = await addAdminUseCase(adminRequest);
-
-
     console.log('This is the response of:', response);
 
     if (response.data.success) {
@@ -175,7 +172,6 @@ const handleFormSubmission = async (data) => {
       apiStatus.value = response.data.success;
       responseMessage.value = response.message || "Record added Successful";
     }
-
   }
   catch (error) {
     console.log('Error occurred:', error.message);

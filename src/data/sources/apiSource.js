@@ -339,6 +339,17 @@ export const apiSource = {
       handleApiError(error);
     }
   },
+
+  async deleteCompanyAccount(id) {
+    try {
+      const response = await authService.deleteCompanyAccount(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteCompanyAccount:', error);
+      handleApiError(error);
+    }
+  },
   
 };
 

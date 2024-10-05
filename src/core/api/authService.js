@@ -332,4 +332,16 @@ export const authService = {
       throw error;
     }
   },
+
+  async deleteCompanyAccount(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_COMPANY_ACCOUNT(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteCompanyAccount:', error);
+      throw error;
+    }
+  },
+
 };

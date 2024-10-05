@@ -79,13 +79,29 @@
                 </div>
             </div>
 
-            <!-- Email Section -->
+            <!-- Accounts Section -->
             <div class="phone-list">
-                <img src="@/assets/ic_phone.svg" alt="Email Icon" />
-                <h4>Email</h4>
-                <ul>
-                    <li v-for="(phone, index) in phoneNumbers" :key="index">{{ phone }}</li>
-                </ul>
+                <img src="@/assets/ic_faq.svg" alt="Account Icon" />
+                <h4>Company Accounts</h4>
+                <hr />
+                <div class="account-details" v-for="(account, index) in companyAccount" :key="index">
+                    <h4>{{ account.accountName }}</h4>
+                    <div class="bank-details">
+                        <h5>{{ account.accountNumber }}</h5>&nbsp; &nbsp; &nbsp;
+                        <h5>{{ account.bankName }}</h5>
+                        <h5 id="delete" @click="DeleteCompanyAccount(account)">Delete</h5>
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button class="btn" @click="addNewNumberClick">Add New Account</button>
+                </div>
+
+                <div v-if="showAccountForm" class="modal-overlay">
+                    <div class="modal">
+                        <AccountDetailsForm @formSubmitted="handleAccountFormSubmission"
+                            @formClosed="showAccountForm = false" />
+                    </div>
+                </div>
             </div>
 
             <!-- FAQ Section -->
@@ -93,7 +109,7 @@
                 <img src="@/assets/ic_faq.svg" alt="FAQ Icon" />
                 <h4>FAQ</h4>
                 <ul>
-                    <li v-for="(phone, index) in phoneNumbers" :key="index">{{ phone }}</li>
+                    <li v-for="(phone, index) in phoneNumbers" :key="index">{{ phone.phoneNumber }}</li>
                 </ul>
             </div>
         </section>
@@ -115,9 +131,11 @@ import ic_reg from '@/assets/ic_registration.svg';
 import ic_people from '@/assets/ic_people.svg';
 import ic_bag from '@/assets/ic_bag.svg';
 import { localStorageSource } from '@/data/sources/localStorage';
-import { addCompanyPhoneUseCase } from '@/domain/useCases/dashboardUseCase';
+import { addCompanyPhoneUseCase, addCompanyAccountUseCase, deleteCompanyAccountUseCase } from '@/domain/useCases/dashboardUseCase';
 import Spinner from '../components/Spinner.vue';
 import CustomDialog from '../components/CustomDialog.vue';
+import AccountDetailsForm from '@/presentation/components/AccountDetailsForm.vue'
+import { elements } from 'chart.js';
 
 
 const router = useRouter();
@@ -135,6 +153,8 @@ const showPhoneForm = ref(false);
 const newPhoneValue = ref('');
 const isPhoneAdded = ref(false);
 const phoneNumbers = ref([]);
+const showAccountForm = ref(false);
+const companyAccount = ref([]);
 
 headerCardContents.value = [
     { icon: ic_people, title: 'Incoming Transfer' },
@@ -164,21 +184,15 @@ const viewRegistrationRecord = (item) => {
 };
 
 const addNewNumberClick = () => {
-    showPhoneForm.value = true;
+    showAccountForm.value = true;
 };
 
 const addNumber = async () => {
     showPhoneForm.value = false
     loading.value = true;
     try {
-        const phoneNumber = ref([]);
-        // phoneNumber.value[0] = newPhoneValue.value.toString();
-
-        phoneNumber.value.push(newPhoneValue.value);
-
-        console.log("Request value for phone number", phoneNumber.value);
-
-        const response = addCompanyPhoneUseCase(phoneNumber.value)
+        console.log("Request value for phone number", newPhoneValue.value);
+        const response = addCompanyPhoneUseCase("0" + newPhoneValue.value)
         console.log("Company add phone response", response)
 
         newPhoneValue.value = '';
@@ -191,7 +205,6 @@ const addNumber = async () => {
             apiStatus.value = response.success;
             responseMessage.value = response.message;
         }
-
     }
     catch (error) {
         showApiDialog.value = true;
@@ -207,6 +220,80 @@ const selectCard = (index, content) => {
     selectedCardName.value = content;
 };
 
+const validateFormField = (request) => {
+    if (request.BankName.trim() === '') {
+        toast.success('Enter bank name');
+        return false;
+    } else if (request.AccountNumber === '') {
+        toast.success('Enter account number');
+        return false;
+    } else if (request.AccountName === '') {
+        toast.success('Enter account name');
+        return false;
+    }
+    return true;
+};
+
+const handleAccountFormSubmission = async (accountDetailsRequest) => {
+    console.log('Details:', accountDetailsRequest);
+    showAccountForm.value = false;
+
+    if (!validateFormField(accountDetailsRequest)) {
+        showAccountForm.value = true;
+        return;
+    }
+
+    try {
+        const accountRequest = {
+            bankName: accountDetailsRequest.BankName,
+            accountNumber: accountDetailsRequest.AccountNumber,
+            accountName: accountDetailsRequest.AccountName
+        };
+
+        console.log('This is the content of:', accountRequest);
+
+        const response = await addCompanyAccountUseCase(accountRequest);
+
+        console.log('This is the response of:', response);
+
+        if (response.data.success) {
+            isPhoneAdded.value = true;
+            showApiDialog.value = true;
+            apiStatus.value = response.data.success;
+            responseMessage.value = response.data.message || "Record added Successful";
+            
+            localStorageSource.savedCompanyAccount(response.data.data);
+        }
+    }
+    catch (error) {
+        showApiDialog.value = true;
+        apiStatus.value = false;
+        responseMessage.value = error.message;
+    }
+};
+
+const DeleteCompanyAccount = async (account) => {
+    try {
+        const response = await deleteCompanyAccountUseCase(account.id);
+
+
+        console.log("The delete company account response ", response);
+
+        if (response.success) {
+            isPhoneAdded.value = true;
+            showApiDialog.value = true;
+            apiStatus.value = true;
+            responseMessage.value = response.message || "Record deleted Successful";
+            localStorageSource.savedCompanyAccount(response.data);
+        }
+    }
+    catch (error) {
+        console.log('Error occurred:', error.message);
+        showApiDialog.value = true;
+        apiStatus.value = false;
+        responseMessage.value = error.message;
+    }
+};
 
 watchEffect(() => {
     if (isPhoneAdded.value === true) {
@@ -220,17 +307,19 @@ watchEffect(() => {
 const onMountedHandler = async () => {
     selectedIndex.value = 0;
     selectedCardName.value = 'Incoming Transfer'
-    console.log('Local storage', localStorageSource.getDashboardData());
+    companyAccount.value = [];
 
+    // const holder = localStorageSource.getDashboardData().companyPhoneNumbers.split(';').map(phone => phone.trim()) || '';
+    // phoneNumbers.value.push(...holder);
 
-    // const phoneNumbersString = '123456789;987654321;123123123; 123456789; 987654321; 123123123';
-    // const sHolder = phoneNumbersString.split(';').map(phone => phone.trim());
-    // phoneNumbers.value.push(...sHolder);
+    localStorageSource.getDashboardData().companyPhoneNumbers.forEach(element => {
+        phoneNumbers.value.push(element.phoneNumber);
+    });
 
-    console.log('Local storage test', phoneNumbers.value);
-
-    const holder = localStorageSource.getDashboardData().companyPhoneNumbers.split(';').map(phone => phone.trim()) || '';
-    phoneNumbers.value.push(...holder);
+    localStorageSource.getCompanyAccount().forEach(account => {
+        companyAccount.value.push(account);
+    });
+    console.log("The company accounts details are:", companyAccount.value);
 };
 
 onMounted(() => {
@@ -293,7 +382,6 @@ onMounted(() => {
 
 .items-section {
     padding: 20px 0;
-    background-color: rgb(164, 8, 8);
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
@@ -461,6 +549,23 @@ input {
     margin-top: 30px;
     width: 40%;
     align-self: center;
+}
+
+.account-details {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.bank-details {
+    display: flex;
+    justify-content: space-between;
+}
+
+#delete {
+    color: #A90836;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: underline;
 }
 
 .spinner {

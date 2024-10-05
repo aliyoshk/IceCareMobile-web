@@ -95,7 +95,7 @@
 
 <script>
 
-import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, watchEffect, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import { storesManager } from '@/presentation/store/userStore';
@@ -117,7 +117,6 @@ export default {
     const isTransferRoute = computed(() => route.path === '/transfer')
     const isTransferDetailsRoute = computed(() => route.path === '/transfer-details');
 
-
     console.log('app.vuestored admin name:', adminStore?.name);
     console.log('local storage admin name:', localStorageSource.getDashboardData()?.adminName);
 
@@ -128,13 +127,22 @@ export default {
       router.go();
     };
 
+    const onMountedHandler = async () => {
+      startSessionTimer();
+    };
+
+    watchEffect(() => {
+      nextTick(() => {
+      onMountedHandler();
+    });
+    });
 
     onMounted(() => {
-      startSessionTimer(); // Start the session timer on app load
+      onMountedHandler();
     });
 
     onBeforeUnmount(() => {
-      stopSessionTimer(); // Stop the timer when the component is destroyed
+      stopSessionTimer();
     });
 
 
@@ -145,7 +153,7 @@ export default {
       isTransferDetailsRoute,
       adminName: computed(() => localStorageSource.getDashboardData()?.adminName ?? adminStore.name),
       showDropdown,
-      showAdminPanel: computed(() => localStorageSource.getUserData()?.showAdminPanel),
+      showAdminPanel: computed(() => localStorageSource.getUserData().showAdminPanel),
       logout,
     };
   }

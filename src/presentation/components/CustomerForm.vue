@@ -46,8 +46,8 @@
           <div class="dropdown-container">
             <select v-model="bank.name">
               <option value="">Select Bank</option>
-              <option v-for="bankOption in banks" :key="bankOption.name" :value="bankOption.name">
-                {{ bankOption.name }}
+              <option v-for="bankOption in banks" :key="bankOption.bankName" :value="bankOption.bankName">
+                {{ bankOption.bankName }}
               </option>
             </select>
             <span class="dropdown-icon">&#9662;</span>
@@ -108,6 +108,7 @@
 
 <script>
 import { Title } from 'chart.js';
+import { localStorageSource } from '@/data/sources/localStorage';
 
 export default {
   data() {
@@ -123,12 +124,7 @@ export default {
         dollarRate: '',
         amountDollar: ''
       },
-      banks: [
-        { name: 'Wema Bank' },
-        { name: 'Jaiz Bank' },
-        { name: 'Union Bank' },
-        { name: 'UBA Bank' }
-      ],
+      banks: [],
     };
   },
   methods: {
@@ -145,7 +141,15 @@ export default {
     },
     closeForm() {
       this.$emit('formClosed');
-    }
+    },
+    fetchBanks() {
+      const dashboardData = localStorageSource.getDashboardData();
+      if (dashboardData && dashboardData.companyAccounts) {
+        this.banks = dashboardData.companyAccounts;
+      } else {
+        this.banks = [];
+      }
+    },
   },
   computed: {
     shouldDisableTotalAmount() {
@@ -185,6 +189,9 @@ export default {
       type: String,
       required: true
     }
+  },
+  mounted() {
+    this.fetchBanks();
   }
 };
 </script>

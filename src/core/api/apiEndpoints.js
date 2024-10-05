@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
   DELETE_PAYMENT: (id) => `Payment/DeletePayment/${id}`,
   DELETE_BANK: (id) => `Bank/DeleteBank/${id}`,
   ADD_COMPANY_ACCOUNTS: 'Dashboard/AddCompanyAccount',
-  ADD_COMPANY_NUMBERS: 'Dashboard/UpdatePhoneNumbers',
+  ADD_COMPANY_NUMBERS: 'Dashboard/AddCompanyPhoneNumbers',
   COMPLETE_CUSTOMER_PAYMENT: 'Customer/CompleteCustomerPayment',
+  DELETE_COMPANY_ACCOUNT: (id) => `Dashboard/DeleteAccount/${id}`,
 };

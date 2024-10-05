@@ -18,6 +18,16 @@ export const localStorageSource = {
     clearDashboardData() {
       localStorage.removeItem('dashboardData');
     },
+
+    savedCompanyAccount(accountDetails) {
+      localStorage.setItem('accountData', JSON.stringify(accountDetails));
+    },
+    getCompanyAccount() {
+      return JSON.parse(localStorage.getItem('accountData'));
+    },
+    clearComapanyAccountData() {
+      localStorage.removeItem('accountData');
+    },
   };
   
   

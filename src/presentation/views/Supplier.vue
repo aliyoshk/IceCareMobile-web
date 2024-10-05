@@ -42,6 +42,7 @@
             <th>Amount (Naira)</th>
             <th>Rate</th>
             <th>Amount (Dollar)</th>
+            <th>Balance</th>
             <th>Mode of Payment</th>
           </tr>
         </thead>
@@ -53,8 +54,9 @@
             <td>{{ formatCurrency(supplier.amount, 'NGN') }}</td>
             <td>{{ supplier.dollarRate }}</td>
             <td>{{ formatCurrency(supplier.dollarAmount, 'USD') }}</td>
+            <td>{{ formatCurrency(supplier.balance) }}</td>
             <td>{{ supplier.modeOfPayment }}</td>
-            <td class="delete" @click="deleteRecord(supplier)">Delete Supplier</td>
+            <td class="delete" @click="deleteRecord(supplier)">Delete</td>
           </tr>
         </tbody>
       </table>
@@ -162,6 +164,9 @@ const validateFormField = (supplierRequest) => {
   } else if (supplierRequest.amountDollar === '') {
     toast.success('Enter amount of dollar');
     return false;
+  } else if (supplierRequest.balance === '') {
+    toast.success('Enter balance');
+    return false;
   }
 
   return true; ``
@@ -188,6 +193,7 @@ const handleFormSubmission = async (supplierRequest) => {
       phoneNumber: supplierRequest.phone.toString(),
       modeOfPayment: supplierRequest.modeOfPayment,
       banks: banksData,
+      balance: supplierRequest.balance,
       dollarRate: supplierRequest.dollarRate,
       dollarAmount: supplierRequest.amountDollar,
       amount: supplierRequest.totalAmountNaira || 0,
