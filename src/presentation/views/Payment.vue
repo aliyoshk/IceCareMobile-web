@@ -34,7 +34,9 @@
             <th>#</th>
             <th>Transaction Date</th>
             <th>Customer Name</th>
-            <th>Amount ($)</th>
+            <th>Amount($)</th>
+            <th>Balance</th>
+            <th>Deposit</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -44,6 +46,8 @@
             <td>{{ formatDate(payment.date) }}</td>
             <td>{{ payment.customerName }}</td>
             <td>{{ formatCurrency(payment.dollarAmount, 'USD') }}</td>
+            <td>{{ formatCurrency(payment.deposit) }}</td>
+            <td>{{ formatCurrency(payment.balance) }}</td>
             <td class="delete" @click="deleteRecord(payment)">Delete record</td>
           </tr>
         </tbody>
@@ -109,7 +113,6 @@ const cardsData = [
   { image: imgx, title: 'Total Amount', value: totalTransaction },
 ];
 
-
 watchEffect(() => {
   if (isEndPointHit.value === true) {
     nextTick(() => {
@@ -118,7 +121,6 @@ watchEffect(() => {
     });
   }
 });
-
 
 onMounted(async () => {
   onMountedHandler();
@@ -171,6 +173,10 @@ const validateFormField = (request) => {
     toast.success('Enter dollar amount');
     return false;
   }
+  else if (request.Balance > 0 && request.Deposit > 0) {
+    toast.success('Balance and Deposit cannot have value at the same time');
+    return false;
+  }
 
   return true;
 };
@@ -187,8 +193,10 @@ const handleFormSubmission = async (paymentRequest) => {
   try {
 
     const paymentRequestData = {
-      CustomerName: paymentRequest.CustomerName,
-      DollarAmount: paymentRequest.DollarAmount,
+      customerName: paymentRequest.CustomerName,
+      dollarAmount: paymentRequest.DollarAmount,
+      balance: paymentRequest.Balance,
+      deposit: paymentRequest.Deposit
     };
 
     console.log('This is the content of:', paymentRequestData);
@@ -199,9 +207,10 @@ const handleFormSubmission = async (paymentRequest) => {
     console.log('This is the response of:', response);
 
     if (response.success || response.data.success) {
+      isEndPointHit.value = true;
       showApiDialog.value = true;
-      apiStatus.value = response.success;
-      responseMessage.value = response.message || "Record added Successful";
+      apiStatus.value = true;
+      responseMessage.value = response.data.message || "Record added Successful";
     }
   }
   catch (error) {
@@ -220,9 +229,6 @@ dialogMessage.value = `Proceeding would delete ${payment.customerName} record`;
 isDialogVisible.value = true;
 
 seletedPayment.value = payment;
-
-console.log('Viewing record for:', payment);
-toast.success('Viewing details for: ' + payment.name);
 };
 
 const cancelDialog = () => {
@@ -255,13 +261,15 @@ const done = () => {
   showApiDialog.value = false;
 };
 
-const columns = ['#', 'Transaction Date', 'Customer Name', 'Amount($)'];
+const columns = ['#', 'Transaction Date', 'Customer Name', 'Amount($)', 'Balance', 'Deposit'];
 const rows = computed(() =>
   filteredPayments.value.map((payment, index) => [
     index + 1,
     formatDate(payment.date),
     payment.customerName,
-    formatCurrency(payment.dollarAmount, 'USD')
+    formatCurrency(payment.dollarAmount, 'USD'),
+    formatCurrency(payment.balance),
+    formatCurrency(payment.deposit)
   ])
 );
 

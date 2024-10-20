@@ -153,7 +153,7 @@ export default {
       isTransferDetailsRoute,
       adminName: computed(() => localStorageSource.getDashboardData()?.adminName ?? adminStore.name),
       showDropdown,
-      showAdminPanel: computed(() => localStorageSource.getUserData().showAdminPanel),
+      showAdminPanel: computed(() => localStorageSource.getUserData()?.showAdminPanel),
       logout,
     };
   }

@@ -42,6 +42,7 @@
             <th>Amount (Naira)</th>
             <th>Rate</th>
             <th>Amount (Dollar)</th>
+            <th>Deposit</th>
             <th>Balance</th>
             <th>Mode of Payment</th>
           </tr>
@@ -54,6 +55,7 @@
             <td>{{ formatCurrency(supplier.amount, 'NGN') }}</td>
             <td>{{ supplier.dollarRate }}</td>
             <td>{{ formatCurrency(supplier.dollarAmount, 'USD') }}</td>
+            <td>{{ formatCurrency(supplier.deposit) }}</td>
             <td>{{ formatCurrency(supplier.balance) }}</td>
             <td>{{ supplier.modeOfPayment }}</td>
             <td class="delete" @click="deleteRecord(supplier)">Delete</td>
@@ -146,9 +148,6 @@ const validateFormField = (supplierRequest) => {
   if (supplierRequest.name.trim() === '') {
     toast.success('Enter supplier name');
     return false;
-  } else if (supplierRequest.phone === '') {
-    toast.success('Enter phone number');
-    return false;
   } else if (supplierRequest.modeOfPayment.trim() === '') {
     toast.success('Select mode of payment');
     return false;
@@ -190,13 +189,14 @@ const handleFormSubmission = async (supplierRequest) => {
 
     const supplierRequestData = {
       name: supplierRequest.name,
-      phoneNumber: supplierRequest.phone.toString(),
+      phoneNumber: supplierRequest.phone,
       modeOfPayment: supplierRequest.modeOfPayment,
       banks: banksData,
       balance: supplierRequest.balance,
       dollarRate: supplierRequest.dollarRate,
       dollarAmount: supplierRequest.amountDollar,
       amount: supplierRequest.totalAmountNaira || 0,
+      deposit: 0.0,
       channel: 'Web'
     };
 
@@ -208,8 +208,8 @@ const handleFormSubmission = async (supplierRequest) => {
       isEndPointHit.value = true;
 
       showApiDialog.value = true;
-      apiStatus.value = response.success;
-      responseMessage.value = response.message;
+      apiStatus.value = true;
+      responseMessage.value = response.data.message;
     }
   }
   catch (error) {
@@ -223,14 +223,13 @@ const deleteRecord = (supplier) => {
 
   seletedSupplier.value = [];
 
-  dialogTitle.value = 'Approve Transfer';
-  dialogMessage.value = `Proceeding would mark ${supplier.name} transfer as confirmed`;
+  dialogTitle.value = `Delete ${supplier.name}`;
+  dialogMessage.value = `Proceeding will delete the record from the list`;
   isDialogVisible.value = true;
   
   seletedSupplier.value = supplier;
 
   console.log('Viewing record for:', supplier);
-  toast.success('Viewing details for: ' + supplier.name);
 };
 
 const cancelDialog = () => {
@@ -311,7 +310,7 @@ const onMountedHandler = async () => {
 };
 
 
-const columns = ['#', 'Date', 'Customer Name', 'Amount(Naira)', 'Rate', 'Amount(Dollar)', 'Mode of Payment'];
+const columns = ['#', 'Date', 'Customer Name', 'Amount(Naira)', 'Rate', 'Amount(Dollar)', 'Deposit', 'Balance', 'MOP'];
 const rows = computed(() =>
   filteredSuppliers.value.map((supplier, index) => [
     index + 1,
@@ -320,6 +319,8 @@ const rows = computed(() =>
     "#" + supplier.amount,
     supplier.dollarRate,
     formatCurrency(supplier.dollarAmount, 'USD'),
+    formatCurrency(supplier.deposit),
+    formatCurrency(supplier.balance),
     supplier.modeOfPayment,
   ])
 );

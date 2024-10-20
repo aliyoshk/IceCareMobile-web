@@ -9,7 +9,7 @@
 
       <div class="form-item">
         <label for="phone">Phone Number</label>
-        <input type="number" id="phone" v-model="customer.phone" placeholder="Enter phone number" />
+        <input type="text" id="phone" v-model="customer.phone" placeholder="Enter phone number" />
       </div>
 
       <div class="form-item horizontal-group">
@@ -80,8 +80,9 @@
             :disabled="shouldDisableTotalAmount || shouldDisableNairaFields" />
         </div>
         <div class="form-item-wrapper">
-          <label for="balance">Balance (if any)</label>
-          <input type="number" id="balance" v-model="customer.balance" placeholder="Enter balance" />
+          <label for="balance">Balance/Deposit (if any)</label>
+          <input type="number" id="balance" v-model="customer.balance" placeholder="Enter balance"
+            :disabled="shouldPopulateValue" />
         </div>
       </div>
 
@@ -155,7 +156,7 @@ export default {
     shouldDisableTotalAmount() {
 
       if (this.customer.modeOfPayment === 'Transfer' && this.customer.banks.length) {
-      this.customer.totalAmountNaira = 0;
+        this.customer.totalAmountNaira = 0;
         this.customer.banks.forEach(bank => {
           if (bank.amount) {
             this.customer.totalAmountNaira += Number(bank.amount);
@@ -183,6 +184,12 @@ export default {
 
       return this.customer.paymentCurrency === 'Dollar';
     },
+    shouldPopulateValue() {
+      if (this.customer.amountDollar > 0) {
+        this.customer.balance = this.customer.totalAmountNaira - (this.customer.amountDollar * this.customer.dollarRate);
+      }
+      return this.customer.paymentCurrency !== 'Dollar';
+    }
   },
   props: {
     rate: {

@@ -43,6 +43,7 @@
             <th>Rate</th>
             <th>Amount (Dollar)</th>
             <th>Payment Currency</th>
+            <th>Deposit</th>
             <th>Balance</th>
             <th>Mode of Payment</th>
             <th>Action</th>
@@ -57,6 +58,7 @@
             <td>{{ formatCurrency(customer.dollarRate) }}</td>
             <td>{{ formatCurrency(customer.dollarAmount, 'USD') }}</td>
             <td>{{ customer.paymentCurrency }}</td>
+            <td>{{ formatCurrency(customer.deposit) }}</td>
             <td>{{ formatCurrency(customer.balance) }}</td>
             <td>{{ customer.modeOfPayment }}</td>
             <td class="done" @click="complete(customer)">Complete</td>
@@ -72,12 +74,13 @@
         <form @submit.prevent="completePayment">
 
           <div class="completion-form-header">
-            <!-- <label for="upshoreCharges">Enter charges rate for {{ seletedCustomer.name }}</label> -->
+            <label for="upshoreCharges">Charges($) for {{ seletedCustomer.name }}</label>
+            <br><br>
             <button class="close" @click="showCompletionForm = false">&#x2715;</button>
           </div>
 
           <div class="completion-form">
-            <label for="upshoreCharges" class="chargeText">Charge($) for {{ seletedCustomer.name }}</label>
+            <label for="upshoreCharges" class="chargeText">Charge($)</label>
             <input type="number" step="0.01" id="upshoreCharges" name="upshoreCharges" v-model="upshoreCharges">
             <button class="dollar-button" type="submit">Proceed</button>
           </div>
@@ -158,12 +161,14 @@ const filteredCustomers = computed(() => {
 
 const complete = (customer) => {
   seletedCustomer.value = [];
-  if (localStorageSource.getDashboardData().availableDollarAmount < customer.dollarAmount) {
-    showCompletionForm.value = true;
-  }
-  else {
-    alert('There is no suffiecient dollar to complete customer payment');
-  }
+  seletedCustomer.value = customer;
+  showCompletionForm.value = true;
+  // if (localStorageSource.getDashboardData().availableDollarAmount < customer.dollarAmount) {
+    
+  // }
+  // else {
+  //   alert('There is no suffiecient dollar to complete customer payment');
+  // }
 };
 
 const completePayment = async () => {
@@ -189,8 +194,8 @@ const completePayment = async () => {
       if (response.data.success) {
         isEndPointHit.value = true;
         showApiDialog.value = true;
-        apiStatus.value = response.data.success;
-        responseMessage.value = response.data.message;
+        apiStatus.value = true;
+        responseMessage.value = response.data.message || "Operation is successful";
       }
     }
     catch (error) {
@@ -209,12 +214,11 @@ const completePayment = async () => {
 const deleteRecord = (customer) => {
 
   seletedCustomer.value = [];
+  seletedCustomer.value = customer;
 
   dialogTitle.value = 'Delete Record';
   dialogMessage.value = `Proceeding would delete ${customer.name} record`;
   isDialogVisible.value = true;
-
-  seletedCustomer.value = customer;
 
   console.log('Viewing record for:', customer);
   toast.success('Viewing details for: ' + customer.name);
@@ -306,9 +310,6 @@ const validateFormField = (customerRequest) => {
   if (customerRequest.name.trim() === '') {
     toast.success('Enter supplier name');
     return false;
-  } else if (customerRequest.phone === '') {
-    toast.success('Enter phone number');
-    return false;
   } else if (customerRequest.paymentCurrency.trim() === '') {
     toast.success('Select payment currency');
     return false;
@@ -347,7 +348,7 @@ const handleFormSubmission = async (customerRequest) => {
 
     const customerRequestData = {
       name: customerRequest.name,
-      phoneNumber: customerRequest.phone.toString(),
+      phoneNumber: customerRequest.phone,
       modeOfPayment: customerRequest.modeOfPayment,
       banks: banksData,
       dollarRate: customerRequest.dollarRate,
@@ -356,6 +357,7 @@ const handleFormSubmission = async (customerRequest) => {
       paymentEvidence: [{ receipt: "-" }],
       dollarAmount: customerRequest.amountDollar,
       amount: customerRequest.totalAmountNaira || 0,
+      deposit: 0.0,
       channel: 'Web'
     };
 
@@ -367,7 +369,7 @@ const handleFormSubmission = async (customerRequest) => {
       isEndPointHit.value = true;
 
       showApiDialog.value = true;
-      apiStatus.value = response.success;
+      apiStatus.value = true;
       responseMessage.value = response.message || "Record added Successful";
     }
   }
@@ -378,7 +380,7 @@ const handleFormSubmission = async (customerRequest) => {
   }
 };
 
-const columns = ['#', 'Date', 'Name', 'Amount(Naira)', 'Rate', 'Amount(Dollar)', 'Payment Currency', 'Mode of Payment'];
+const columns = ['#', 'Date', 'Name', 'Amount(₦)', 'Rate', 'Amount($)', 'Payment Currency', 'Deposit', 'Balance', 'MOP'];
 const rows = computed(() =>
   filteredCustomers.value.map((customer, index) => [
     index + 1,
@@ -388,6 +390,8 @@ const rows = computed(() =>
     customer.dollarRate,
     formatCurrency(customer.dollarAmount, 'USD'),
     customer.paymentCurrency,
+    formatCurrency(customer.deposit),
+    formatCurrency(customer.balance),
     customer.modeOfPayment,
   ])
 );

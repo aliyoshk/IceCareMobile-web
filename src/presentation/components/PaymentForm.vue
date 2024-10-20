@@ -8,8 +8,18 @@
             </div>
 
             <div class="form-item">
-                <label for="balance">Amount($)</label>
-                <input type="number" id="balance" v-model="payment.DollarAmount" placeholder="Enter dollar amount" />
+                <label for="amount">Amount($)</label>
+                <input type="number" id="amount" v-model="payment.DollarAmount" placeholder="Enter dollar amount" />
+            </div>
+
+            <div class="form-item">
+                <label for="balance">Balance</label>
+                <input type="text" id="balance" v-model="payment.Balance" placeholder="Enter balance if any" />
+            </div>
+
+            <div class="form-item">
+                <label for="deposit">Deposit</label>
+                <input type="text" id="deposit" v-model="payment.Deposit" placeholder="Enter deposit if any" />
             </div>
 
             <div class="form-actions">
@@ -27,7 +37,9 @@ import { ref } from 'vue';
 
 const payment = ref({
   CustomerName: '',
-  DollarAmount: ''
+  DollarAmount: '',
+  Balance: 0,
+  Deposit: 0
 });
 
 const emit = defineEmits(['formSubmitted', 'formClosed']);

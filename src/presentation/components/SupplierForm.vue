@@ -10,7 +10,7 @@
       <div class="form-item horizontal-group">
         <div class="form-item-wrapper">
           <label for="phone">Phone Number</label>
-          <input type="number" id="phone" v-model="supplier.phone" placeholder="Enter phone number" />
+          <input type="text" id="phone" v-model="supplier.phone" placeholder="Enter phone number" />
         </div>
         <div class="form-item-wrapper">
           <label for="payment">Mode of Payment</label>
@@ -64,8 +64,8 @@
             placeholder="Enter total amount in Naira" :disabled="shouldDisableTotalAmount" value="" />
         </div>
         <div class="form-item-wrapper">
-          <label for="balance">Balance</label>
-          <input type="number" id="balance" v-model="supplier.balance" placeholder="Enter balance" />
+          <label for="balance">Balance/Deposit</label>
+          <input type="number" id="balance" v-model="supplier.balance" placeholder="Enter balance" :disabled="shouldPopulateValue"/>
         </div>
       </div>
 
@@ -143,6 +143,15 @@ export default {
       return this.supplier.modeOfPayment === 'Transfer' && (
         !this.supplier.banks.every(bank => bank.name.trim() !== '' && bank.amount !== '')
       );
+    },
+    shouldPopulateValue() {
+      if (this.supplier.amountDollar > 0 && this.supplier.totalAmountNaira > 0 && this.supplier.dollarRate > 0) {
+        this.supplier.balance = this.supplier.totalAmountNaira - (this.supplier.amountDollar * this.supplier.dollarRate);
+      }
+      else {
+        this.supplier.balance = 0;
+      }
+      return true;
     }
   },
   mounted() {

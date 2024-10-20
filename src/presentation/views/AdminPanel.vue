@@ -5,7 +5,7 @@
         <img src="@/assets/ic_signal.svg" alt="Card Image" class="card-image" />
         <div class="content">
           <h3>Total Count</h3>
-          <p>0</p>
+          <p>{{ totalRecord }}</p>
         </div>
       </div>
     </section>
@@ -183,7 +183,11 @@ const handleFormSubmission = async (data) => {
 
 const deleteRecord = async (admin) => {
   try {
-    if (response.success || response.data.success) {
+    console.log("The admin records are:", admin);
+    const response = await deleteAdminUseCase(admin.id);
+    console.log("The response of delete is:", response);
+
+    if (response.success) {
       isAlteration.value = true;
       showApiDialog.value = true;
       apiStatus.value = true;

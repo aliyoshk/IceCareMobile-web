@@ -130,9 +130,7 @@ const cardsData = [
 ];
 
 const addPayment = () => {
-  if (filteredBanks.value.length) {
-    showForm.value = true;
-  }
+  showForm.value = true;
 };
 
 watchEffect(() => {
