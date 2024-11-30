@@ -8,6 +8,15 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Enable CORS for your frontend domain
+const allowedOrigins = ['https://ice-care-web-ada4a7f432c7.herokuapp.com'];
+
+app.use(cors({
+  origin: allowedOrigins, // Allow your frontend domain
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',  // Allow specific HTTP methods
+  allowedHeaders: 'Content-Type, Authorization',  // Allow specific headers
+}));
+
 // Serve static files from the dist directory
 const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));
