@@ -13,9 +13,18 @@ const __dirname = path.dirname(__filename);
 const allowedOrigins = ['https://ice-care-web-ada4a7f432c7.herokuapp.com'];
 
 app.use(cors({
-  origin: allowedOrigins, // Allow your frontend domain
+  origin: allowedOrigins,  // Allow specific frontend domain
   methods: 'GET,POST,PUT,DELETE,OPTIONS',  // Allow specific HTTP methods
   allowedHeaders: 'Content-Type, Authorization',  // Allow specific headers
+  credentials: true,  // Allow credentials (e.g., cookies, headers, etc.)
+}));
+
+// Handle preflight requests for CORS (OPTIONS)
+app.options('*', cors({
+  origin: allowedOrigins,
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type, Authorization',
+  credentials: true,
 }));
 
 // Serve static files from the dist directory
