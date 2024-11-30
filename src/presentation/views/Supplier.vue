@@ -310,7 +310,7 @@ const onMountedHandler = async () => {
 };
 
 
-const columns = ['#', 'Date', 'Customer Name', 'Amount(Naira)', 'Rate', 'Amount(Dollar)', 'Deposit', 'Balance', 'MOP'];
+const columns = ['#', 'Date', 'Supplier Name', 'Amount(Naira)', 'Rate', 'Amount(Dollar)', 'Deposit', 'Balance', 'MOP'];
 const rows = computed(() =>
   filteredSuppliers.value.map((supplier, index) => [
     index + 1,
