@@ -76,7 +76,6 @@
 
 import { ref, computed, onMounted, watchEffect, nextTick } from 'vue';
 import imgx from '@/assets/ic_supplier.svg';
-import { customerData } from '@/data/mockData/customerData';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';

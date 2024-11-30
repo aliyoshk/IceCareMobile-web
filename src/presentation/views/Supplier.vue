@@ -86,7 +86,6 @@
 
 <script setup>
 import { ref, computed, onMounted, watchEffect, nextTick } from 'vue';
-import { supplierData } from '@/data/mockData/supplierData';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
@@ -105,7 +104,7 @@ import router from '../router';
 
 const showForm = ref(false);
 const searchQuery = ref('');
-const suppliers = ref(supplierData);
+const suppliers = ref([]);
 const toast = useToast();
 const loading = ref(false);
 const isEndPointHit = ref(false);

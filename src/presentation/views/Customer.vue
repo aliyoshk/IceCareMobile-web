@@ -109,7 +109,6 @@
 
 <script setup>
 import { ref, computed, onMounted, watchEffect, nextTick } from 'vue';
-import { customerData } from '@/data/mockData/customerData';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
@@ -129,7 +128,7 @@ const loading = ref(false);
 const showForm = ref(false);
 const toast = useToast();
 const searchQuery = ref('');
-const customers = ref(customerData);
+const customers = ref([]);
 const isEndPointHit = ref(false);
 const totalAmount = ref('');
 const totalDollar = ref('');
