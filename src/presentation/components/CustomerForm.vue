@@ -52,7 +52,12 @@
             </select>
             <span class="dropdown-icon">&#9662;</span>
           </div>
-          <input type="number" v-model="bank.amount" placeholder="Amount" required />
+          <input 
+            type="text" 
+            v-model="bank.amount" 
+            placeholder="Amount" 
+            @input="handleBankCurrencyInput($event, 'NGN')"  
+          />
           <span class="remove-bank" @click="removeBank(index)">&#x2715;</span>
         </div>
         <div class="add-bank-container">
@@ -75,9 +80,14 @@
       <div class="form-item horizontal-group">
         <div class="form-item-wrapper">
           <label for="total-amount-naira">Total Amount (Naira)</label>
-          <input type="number" id="total-amount-naira" v-model="customer.totalAmountNaira"
+          <input 
+            type="text" 
+            id="total-amount-naira" 
+            v-model="customer.totalAmountNaira"
             placeholder="Enter total amount in Naira"
-            :disabled="shouldDisableTotalAmount || shouldDisableNairaFields" />
+            :disabled="shouldDisableTotalAmount || shouldDisableNairaFields" 
+            @input="handleCurrencyInput($event, 'NGN')" 
+          />
         </div>
         <div class="form-item-wrapper">
           <label for="balance">Balance/Deposit (if any)</label>
@@ -94,8 +104,13 @@
         </div>
         <div class="form-item-wrapper">
           <label for="amount-dollar">Amount (Dollar)</label>
-          <input type="number" id="amount-dollar" v-model="customer.amountDollar"
-            placeholder="Enter amount in Dollar" />
+          <input 
+            type="text"
+            id="amount-dollar"
+            v-model="customer.amountDollar"
+            placeholder="Enter amount in Dollar"
+            @input="handleCurrencyInput($event, 'USD')"
+          />
         </div>
       </div>
 
@@ -110,6 +125,7 @@
 <script>
 import { Title } from 'chart.js';
 import { localStorageSource } from '@/data/sources/localStorage';
+import { formatAmountToCurrency } from '@/core/utils/helpers';
 
 export default {
   data() {
@@ -130,7 +146,12 @@ export default {
   },
   methods: {
     addBank() {
-      this.customer.banks.push({ name: '', amount: '' });
+      //this.customer.banks.push({ name: '', amount: '' });
+      if (this.customer.banks.every(bank => bank.name.trim() !== '' && bank.amount !== '')) {
+        this.customer.banks.push({ name: '', amount: '' });
+      } else {
+        alert('Please fill details for existing banks before adding a new one.');
+      }
     },
     removeBank(index) {
       if (this.customer.banks.length > 1) {
@@ -150,6 +171,19 @@ export default {
       } else {
         this.banks = [];
       }
+    },
+    handleCurrencyInput(event, currency) {
+      formatAmountToCurrency(event, currency);
+      
+      if (currency === 'USD') {
+        this.customer.amountDollar = event.target.value;
+      } else if (currency === 'NGN') {
+        this.customer.totalAmountNaira = event.target.value;
+      }
+    },
+    handleBankCurrencyInput(event, currency) {
+      formatAmountToCurrency(event, currency);
+      this.customer.banks[index].amount = event.target.value;
     },
   },
   computed: {

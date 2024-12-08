@@ -63,10 +63,12 @@
     <Spinner :loading="loading" />
 
     <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
-      :success="apiStatus" />
+      :success="apiStatus" :emptyList="isEmptyList" 
+    />
 
     <ConfirmDialog v-if="isDialogVisible" :title="dialogTitle" :message="dialogMessage" :show="isDialogVisible"
-      @confirm="handleDelete" @cancel="cancelDialog" />
+      @confirm="handleDelete" @cancel="cancelDialog" 
+    />
   </div>
 </template>
 
@@ -105,6 +107,7 @@ const isDialogVisible = ref(false);
 const dialogTitle = ref('');
 const dialogMessage = ref('');
 const seletedPayment = ref([]);
+const isEmptyList = ref(false);
 
 const cardsData = [
   { image: imgx, title: 'Total No of Customers', value: totalRecord },
@@ -151,6 +154,7 @@ const onMountedHandler = async () => {
     showApiDialog.value = true;
     apiStatus.value = false;
     responseMessage.value = error.message;
+    isEmptyList.value = error.message.includes('Payment list is empty');
   }
   finally {
     loading.value = false;

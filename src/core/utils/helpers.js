@@ -30,3 +30,36 @@ export function IsValidPhoneNumber(phoneNumber) {
     const phoneRegex = /^(\d{11})$/;
     return phoneRegex.test(phoneNumber);
 }
+
+export function formatAmountToCurrency(event, currency = 'NGN') {
+    const symbolMap = {
+        NGN: '₦',
+        USD: '$',
+        GBP: '£',
+        EUR: '€',
+        JPY: '¥',
+        CAD: 'C$',
+    };
+
+    const input = event.target;
+    let value = input.value.replace(/[^0-9.]/g, ''); // Remove non-numeric and non-period characters
+    const cursorPosition = input.selectionStart;
+
+    // Allow the user to manually enter a sign or decimals if desired
+    if (value && !isNaN(value)) {
+        value = parseFloat(value).toLocaleString('en-US', {
+            minimumFractionDigits: 0, // Allow user to type without forcing decimal places
+            maximumFractionDigits: 2  // User can add decimals manually if desired
+        });
+    }
+
+    // Attach the currency symbol
+    const symbol = symbolMap[currency] || '';
+    input.value = symbol + value;
+
+    // Set the cursor position to avoid jumping
+    const newCursorPosition = symbol.length + value.length - (value.length - cursorPosition);
+    input.setSelectionRange(newCursorPosition, newCursorPosition);
+}
+
+  

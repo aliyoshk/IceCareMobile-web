@@ -9,7 +9,12 @@
 
             <div class="form-item">
                 <label for="amount">Amount($)</label>
-                <input type="number" id="amount" v-model="payment.DollarAmount" placeholder="Enter dollar amount" />
+                <input 
+                    type="text" id="amount" 
+                    v-model="payment.DollarAmount" 
+                    placeholder="Enter dollar amount" 
+                    @input="handleCurrencyInput($event, 'USD')" 
+                />
             </div>
 
             <div class="form-item">
@@ -34,6 +39,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { formatAmountToCurrency } from '@/core/utils/helpers';
 
 const payment = ref({
   CustomerName: '',
@@ -50,6 +56,11 @@ const closeForm = () => {
 
 const submitForm = () => {
   emit('formSubmitted', payment.value);
+};
+
+const handleCurrencyInput = (event, currency) => {
+    formatAmountToCurrency(event, currency);
+    this.payment.DollarAmount = event.target.value;
 };
 
 </script>

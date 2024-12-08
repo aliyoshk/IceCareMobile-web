@@ -59,7 +59,7 @@
                     <hr id="line">
                 </div>
                 <div class="btn-container">
-                    <button class="btn" @click="addNewNumberClick">Add Another Number</button>
+                    <button class="btn" @click="addPhoneClick">Add Another Number</button>
                 </div>
 
                 <div v-if="showPhoneForm" class="modal-overlay">
@@ -70,7 +70,7 @@
                             </div>
                             <div class="form">
                                 <label for="newPhoneValue">Phone Number</label>
-                                <input type="number" id="newPhoneValue" name="newPhoneValue" v-model="newPhoneValue"
+                                <input type="text" id="newPhoneValue" name="newPhoneValue" v-model="newPhoneValue"
                                     required>
                                 <button class="form-btn" type="submit">Save</button>
                             </div>
@@ -93,7 +93,7 @@
                     </div>
                 </div>
                 <div class="btn-container">
-                    <button class="btn" @click="addNewNumberClick">Add New Account</button>
+                    <button class="btn" @click="addAccountClick">Add New Account</button>
                 </div>
 
                 <div v-if="showAccountForm" class="modal-overlay">
@@ -182,12 +182,23 @@ const viewRegistrationRecord = (item) => {
     toast.success('Viewing details for: ' + item);
     router.push({ name: 'Transfer', query: { selectedCard: item } });
 };
+;
 
-const addNewNumberClick = () => {
+const addPhoneClick = () => {
+    newPhoneValue.value = ''
+    showPhoneForm.value = true;
+};
+
+const addAccountClick = () => {
     showAccountForm.value = true;
 };
 
 const addNumber = async () => {
+    if (newPhoneValue.value < 11 || newPhoneValue.value > 11 ) {
+        toast.error("Phone number should be 11 digit long")
+        return
+    }
+
     showPhoneForm.value = false
     loading.value = true;
     try {
@@ -222,13 +233,16 @@ const selectCard = (index, content) => {
 
 const validateFormField = (request) => {
     if (request.BankName.trim() === '') {
-        toast.success('Enter bank name');
+        toast.error('Enter bank name');
         return false;
     } else if (request.AccountNumber === '') {
-        toast.success('Enter account number');
+        toast.error('Enter account number');
         return false;
-    } else if (request.AccountName === '') {
-        toast.success('Enter account name');
+    } else if (request.AccountNumber < 10 || request.AccountNumber > 10) {
+        toast.error('Account number should be 10 digits');
+        return false;
+    }else if (request.AccountName === '') {
+        toast.error('Enter account name');
         return false;
     }
     return true;

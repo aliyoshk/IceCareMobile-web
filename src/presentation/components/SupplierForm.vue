@@ -37,7 +37,12 @@
             </select>
             <span class="dropdown-icon">&#9662;</span>
           </div>
-          <input type="number" v-model="bank.amount" placeholder="Amount" required />
+          <input 
+            type="text" 
+            v-model="bank.amount" 
+            placeholder="Amount"
+            @input="handleBankCurrencyInput($event, 'NGN')"  
+          />
           <span class="remove-bank" @click="removeBank(index)">&#x2715;</span>
         </div>
         <div class="add-bank-container">
@@ -58,10 +63,21 @@
       </div> -->
 
       <div class="form-item horizontal-group">
-        <div class="form-item-wrapper">
+        <!-- <div class="form-item-wrapper">
           <label for="total-amount-naira">Total Amount (Naira)</label>
           <input type="number" id="total-amount-naira" v-model="supplier.totalAmountNaira"
             placeholder="Enter total amount in Naira" :disabled="shouldDisableTotalAmount" value="" />
+        </div> -->
+        <div class="form-item-wrapper">
+          <label for="total-amount-naira">Total Amount (Naira)</label>
+          <input 
+            type="text" 
+            id="total-amount-naira" 
+            v-model="supplier.totalAmountNaira"
+            placeholder="Enter total amount in Naira"
+            :disabled="shouldDisableTotalAmount"
+            @input="handleCurrencyInput($event, 'NGN')" 
+          />
         </div>
         <div class="form-item-wrapper">
           <label for="balance">Balance/Deposit</label>
@@ -76,8 +92,12 @@
         </div>
         <div class="form-item-wrapper">
           <label for="amount-dollar">Amount in Dollar</label>
-          <input type="number" id="amount-dollar" v-model="supplier.amountDollar"
-            placeholder="Enter amount in Dollar" />
+          <input type="text" 
+          id="amount-dollar" 
+          v-model="supplier.amountDollar" 
+          placeholder="Enter amount in Dollar"
+          @input="handleCurrencyInput($event, 'USD')"  
+          />
         </div>
       </div>
 
@@ -91,6 +111,7 @@
 
 <script>
 import { localStorageSource } from '@/data/sources/localStorage';
+import { formatAmountToCurrency } from '@/core/utils/helpers';
 
 export default {
   data() {
@@ -135,6 +156,19 @@ export default {
       } else {
         this.banks = [];
       }
+    },
+    handleCurrencyInput(event, currency) {
+      formatAmountToCurrency(event, currency);
+      
+      if (currency === 'USD') {
+        this.supplier.amountDollar = event.target.value;
+      } else if (currency === 'NGN') {
+        this.supplier.totalAmountNaira = event.target.value;
+      }
+    },
+    handleBankCurrencyInput(event, currency) {
+      formatAmountToCurrency(event, currency);
+      this.supplier.banks[index].amount = event.target.value;
     },
   },
   computed: {

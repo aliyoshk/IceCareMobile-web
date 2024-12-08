@@ -2,11 +2,13 @@
     <div v-if="show" class="dialog-overlay">
       <div class="dialog-content">
 
-        <img :src="success ? ic_success : ic_error " alt="icon" class="icon" />
-        <h3>{{ success ? 'Success' : 'Error' }}</h3>
+        <!-- <img :src="success ? ic_success : ic_error" alt="icon" class="icon" /> -->
+        <img :src="emptyList ? ic_info : (success ? ic_success : ic_error)" alt="icon" class="icon" />
+        <!-- <h3>{{ success ? 'Success' : 'Error' }}</h3> -->
+        <h3>{{ emptyList ? "Notice" : (success ? 'Success' : 'Error') }}</h3>
         <p>{{ message }}</p>
         <div class="dialog-actions">
-          <button @click="onConfirm">Done</button>
+          <button @click="onConfirm">{{ emptyList ? 'Ok' : 'Done' }}</button>
         </div>
       </div>
     </div>
@@ -16,6 +18,7 @@
   import { defineProps, defineEmits } from 'vue';
   import ic_success from '@/assets/ic_thumbup.svg';
   import ic_error from '@/assets/ic_thumbdown.svg';
+  import ic_info from '@/assets/ic_info.svg';
   
   const props = defineProps({
     message: {
@@ -29,6 +32,10 @@
     success: {
         type: Boolean,
         required: true,
+    },
+    emptyList: {
+      type: Boolean,
+      default: false,
     }
   });
   
