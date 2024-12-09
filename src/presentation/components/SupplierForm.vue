@@ -41,7 +41,7 @@
             type="text" 
             v-model="bank.amount" 
             placeholder="Amount"
-            @input="handleBankCurrencyInput($event, 'NGN')"  
+            @input="handleBankCurrencyInput($event, 'NGN', index)"  
           />
           <span class="remove-bank" @click="removeBank(index)">&#x2715;</span>
         </div>
@@ -76,12 +76,19 @@
             v-model="supplier.totalAmountNaira"
             placeholder="Enter total amount in Naira"
             :disabled="shouldDisableTotalAmount"
+            value=""
             @input="handleCurrencyInput($event, 'NGN')" 
           />
         </div>
         <div class="form-item-wrapper">
           <label for="balance">Balance/Deposit</label>
-          <input type="number" id="balance" v-model="supplier.balance" placeholder="Enter balance" :disabled="shouldPopulateValue"/>
+          <input 
+            type="number" 
+            id="balance" 
+            v-model="supplier.balance" 
+            placeholder="Enter balance" 
+            :disabled="shouldPopulateValue"
+          />
         </div>
       </div>
 
@@ -111,7 +118,7 @@
 
 <script>
 import { localStorageSource } from '@/data/sources/localStorage';
-import { formatAmountToCurrency } from '@/core/utils/helpers';
+import { formatAmountToCurrency, parseCurrencyValue } from '@/core/utils/helpers';
 
 export default {
   data() {
@@ -166,21 +173,43 @@ export default {
         this.supplier.totalAmountNaira = event.target.value;
       }
     },
-    handleBankCurrencyInput(event, currency) {
+    handleBankCurrencyInput(event, currency, index) {
       formatAmountToCurrency(event, currency);
       this.supplier.banks[index].amount = event.target.value;
     },
   },
   computed: {
     shouldDisableTotalAmount() {
-      this.supplier.totalAmountNaira = "";
-      return this.supplier.modeOfPayment === 'Transfer' && (
-        !this.supplier.banks.every(bank => bank.name.trim() !== '' && bank.amount !== '')
-      );
+      parseCurrencyValue(this.supplier.totalAmountNaira = 0);
+      // return this.supplier.modeOfPayment === 'Transfer' && (
+      //   !this.supplier.banks.every(bank => bank.name.trim() !== '' && parseCurrencyValue(bank.amount) !== '')
+      // );
+      if (!this.supplier.modeOfPayment) {
+        return true;
+      }
+      if (this.supplier.modeOfPayment === 'Transfer') {
+        this.supplier.banks.forEach(bank => {
+            const parsedAmount = parseCurrencyValue(bank.amount);
+              if (parsedAmount > 0) {
+                this.supplier.totalAmountNaira += parsedAmount;
+              }
+          });
+
+        return true;
+      }
+      if (this.supplier.modeOfPayment === 'Cash'){
+        parseCurrencyValue(this.supplier.totalAmountNaira = '');
+        this.supplier.banks = [];
+      }
+      return false;
     },
     shouldPopulateValue() {
-      if (this.supplier.amountDollar > 0 && this.supplier.totalAmountNaira > 0 && this.supplier.dollarRate > 0) {
-        this.supplier.balance = this.supplier.totalAmountNaira - (this.supplier.amountDollar * this.supplier.dollarRate);
+      const totalAmountNaira = parseCurrencyValue(this.supplier.totalAmountNaira);
+      const amountDollar = parseCurrencyValue(this.supplier.amountDollar);
+      const dollarRate = parseCurrencyValue(this.supplier.dollarRate);
+
+      if (amountDollar > 0 && totalAmountNaira > 0 && this.supplier.dollarRate > 0) {
+        this.supplier.balance = totalAmountNaira - (amountDollar * this.supplier.dollarRate);
       }
       else {
         this.supplier.balance = 0;

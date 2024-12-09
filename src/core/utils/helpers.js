@@ -43,6 +43,14 @@ export function formatAmountToCurrency(event, currency = 'NGN') {
 
     const input = event.target;
     let value = input.value.replace(/[^0-9.]/g, ''); // Remove non-numeric and non-period characters
+
+
+    // If the input is empty, clear the field without the currency symbol
+    if (!value) {
+        input.value = '';
+        return;
+    }
+
     const cursorPosition = input.selectionStart;
 
     // Allow the user to manually enter a sign or decimals if desired
@@ -62,4 +70,15 @@ export function formatAmountToCurrency(event, currency = 'NGN') {
     input.setSelectionRange(newCursorPosition, newCursorPosition);
 }
 
-  
+export function parseCurrencyValue(value) {
+    if (typeof value === 'string') {
+      return parseFloat(value.replace(/[^0-9.-]/g, '')) || 0;
+    }
+    return value;
+}
+
+export function formatAmount(value, currency = 'NGN') {
+    if (!value) return '';
+    const numericValue = parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
+    return `${currency} ${numericValue.toLocaleString()}`;
+}

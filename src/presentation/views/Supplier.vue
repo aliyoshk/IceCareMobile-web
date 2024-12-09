@@ -101,6 +101,7 @@ import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
 import signal from '@/assets/ic_signal.svg';
 import naira from '@/assets/ic_naira.svg';
+import { parseCurrencyValue } from '@/core/utils/helpers';
 import router from '../router';
 
 
@@ -138,7 +139,7 @@ const validateFormField = (supplierRequest) => {
       errorMessage.value = 'Bank name should be filled';
       return;
     }
-    if (bank.amount <= 0) {
+    if (parseCurrencyValue(bank.amount) <= 0) {
       errorMessage.value = 'Bank amount should be greather than 0';
       return;
     }
@@ -150,19 +151,19 @@ const validateFormField = (supplierRequest) => {
   } else if (supplierRequest.modeOfPayment.trim() === '') {
     toast.success('Select mode of payment');
     return false;
-  } else if (supplierRequest.modeOfPayment.trim() === 'Cash' && supplierRequest.totalAmountNaira === '') {
+  } else if (supplierRequest.modeOfPayment.trim() === 'Cash' && parseCurrencyValue(supplierRequest.totalAmountNaira) === '') {
     toast.success('Enter the amount');
     return false;
   } else if (supplierRequest.modeOfPayment.trim() === 'Transfer' && errorMessage.value !== '') {
     toast.success(errorMessage.value);
     return false;
-  } else if (supplierRequest.dollarRate === '') {
+  } else if (parseCurrencyValue(supplierRequest.dollarRate) === '') {
     toast.success('Enter the dollar rate');
     return false;
-  } else if (supplierRequest.amountDollar === '') {
+  } else if (parseCurrencyValue(supplierRequest.amountDollar) === '') {
     toast.success('Enter amount of dollar');
     return false;
-  } else if (supplierRequest.balance === '') {
+  } else if (parseCurrencyValue(supplierRequest.balance) === '') {
     toast.success('Enter balance');
     return false;
   }
@@ -180,10 +181,9 @@ const handleFormSubmission = async (supplierRequest) => {
   }
 
   try {
-
     const banksData = supplierRequest.banks.map(bank => ({
       bankName: bank.name,
-      amountTransferred: bank.amount || 0
+      amountTransferred: parseCurrencyValue(bank.amount) || 0
     }));
 
     const supplierRequestData = {
@@ -191,10 +191,10 @@ const handleFormSubmission = async (supplierRequest) => {
       phoneNumber: supplierRequest.phone,
       modeOfPayment: supplierRequest.modeOfPayment,
       banks: banksData,
-      balance: supplierRequest.balance,
-      dollarRate: supplierRequest.dollarRate,
-      dollarAmount: supplierRequest.amountDollar,
-      amount: supplierRequest.totalAmountNaira || 0,
+      balance: parseCurrencyValue(supplierRequest.balance),
+      dollarRate: parseCurrencyValue(supplierRequest.dollarRate),
+      dollarAmount: parseCurrencyValue(supplierRequest.amountDollar),
+      amount: parseCurrencyValue(supplierRequest.totalAmountNaira) || 0,
       deposit: 0.0,
       channel: 'Web'
     };

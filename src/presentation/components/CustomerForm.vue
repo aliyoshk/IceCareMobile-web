@@ -56,7 +56,7 @@
             type="text" 
             v-model="bank.amount" 
             placeholder="Amount" 
-            @input="handleBankCurrencyInput($event, 'NGN')"  
+            @input="handleBankCurrencyInput($event, 'NGN', index)"  
           />
           <span class="remove-bank" @click="removeBank(index)">&#x2715;</span>
         </div>
@@ -125,7 +125,7 @@
 <script>
 import { Title } from 'chart.js';
 import { localStorageSource } from '@/data/sources/localStorage';
-import { formatAmountToCurrency } from '@/core/utils/helpers';
+import { formatAmountToCurrency, parseCurrencyValue } from '@/core/utils/helpers';
 
 export default {
   data() {
@@ -174,34 +174,35 @@ export default {
     },
     handleCurrencyInput(event, currency) {
       formatAmountToCurrency(event, currency);
-      
+         
       if (currency === 'USD') {
         this.customer.amountDollar = event.target.value;
       } else if (currency === 'NGN') {
         this.customer.totalAmountNaira = event.target.value;
       }
     },
-    handleBankCurrencyInput(event, currency) {
+    handleBankCurrencyInput(event, currency, index) {
       formatAmountToCurrency(event, currency);
       this.customer.banks[index].amount = event.target.value;
     },
   },
   computed: {
     shouldDisableTotalAmount() {
-
       if (this.customer.modeOfPayment === 'Transfer' && this.customer.banks.length) {
-        this.customer.totalAmountNaira = 0;
+        parseCurrencyValue(this.customer.totalAmountNaira = 0);
         this.customer.banks.forEach(bank => {
-          if (bank.amount) {
-            this.customer.totalAmountNaira += Number(bank.amount);
-          }
+
+          const parsedAmount = parseCurrencyValue(bank.amount);
+            if (parsedAmount > 0) {
+              this.customer.totalAmountNaira += parsedAmount;
+            }
         });
       }
 
       return this.customer.modeOfPayment === 'Transfer';
     },
     shouldDisableTransferOption() {
-      this.customer.totalAmountNaira = '';
+      parseCurrencyValue(this.customer.totalAmountNaira = '');
 
       if (this.customer.paymentCurrency === 'Dollar') {
         this.customer.modeOfPayment = 'Cash';
@@ -210,17 +211,25 @@ export default {
       return this.customer.paymentCurrency === 'Dollar';
     },
     shouldDisableNairaFields() {
+      const totalAmountNaira = parseCurrencyValue(this.customer.totalAmountNaira );
+      const amountDollar = parseCurrencyValue(this.customer.amountDollar);
+      const dollarRate = parseCurrencyValue(this.customer.dollarRate);
+
       this.customer.dollarRate = this.rate;
 
-      if (this.customer.paymentCurrency === 'Dollar' && this.customer.dollarRate && this.customer.amountDollar) {
-        this.customer.totalAmountNaira = this.customer.amountDollar * this.customer.dollarRate;
+      if (this.customer.paymentCurrency === 'Dollar' && this.customer.dollarRate && totalAmountNaira) {
+        totalAmountNaira = amountDollar * this.customer.dollarRate;
       }
 
       return this.customer.paymentCurrency === 'Dollar';
     },
     shouldPopulateValue() {
-      if (this.customer.amountDollar > 0) {
-        this.customer.balance = this.customer.totalAmountNaira - (this.customer.amountDollar * this.customer.dollarRate);
+      const totalAmountNaira = parseCurrencyValue(this.customer.totalAmountNaira );
+      const amountDollar = parseCurrencyValue(this.customer.amountDollar);
+      const dollarRate = parseCurrencyValue(this.customer.dollarRate);
+      
+      if (amountDollar > 0 && totalAmountNaira > 0) {
+        this.customer.balance = totalAmountNaira - (amountDollar * this.customer.dollarRate);
       }
       return this.customer.paymentCurrency !== 'Dollar';
     }

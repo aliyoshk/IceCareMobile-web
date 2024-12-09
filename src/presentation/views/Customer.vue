@@ -124,6 +124,7 @@ import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
 import signal from '@/assets/ic_signal.svg';
 import naira from '@/assets/ic_naira.svg';
+import { parseCurrencyValue } from '@/core/utils/helpers';
 import router from '../router';
 
 const loading = ref(false);
@@ -304,7 +305,7 @@ const validateFormField = (customerRequest) => {
       errorMessage.value = 'Bank name should be filled';
       return;
     }
-    if (bank.amount <= 0) {
+    if (parseCurrencyValue(bank.amount) <= 0) {
       errorMessage.value = 'Bank amount should be greather than 0';
       return;
     }
@@ -322,10 +323,10 @@ const validateFormField = (customerRequest) => {
   } else if (customerRequest.modeOfPayment.trim() === 'Transfer' && errorMessage.value !== '') {
     toast.success(errorMessage.value);
     return false;
-  } else if (customerRequest.dollarRate === '') {
+  } else if (parseCurrencyValue(customerRequest.dollarRate) === '') {
     toast.success('Enter the dollar rate');
     return false;
-  } else if (customerRequest.amountDollar === '') {
+  } else if (parseCurrencyValue(customerRequest.amountDollar) === '') {
     toast.success('Enter amount of dollar');
     return false;
   }
@@ -346,7 +347,7 @@ const handleFormSubmission = async (customerRequest) => {
 
     const banksData = customerRequest.banks.map(bank => ({
       bankName: bank.name,
-      amountTransferred: bank.amount || 0
+      amountTransferred: parseCurrencyValue(bank.amount) || 0
     }));
 
     const customerRequestData = {
@@ -354,12 +355,12 @@ const handleFormSubmission = async (customerRequest) => {
       phoneNumber: customerRequest.phone,
       modeOfPayment: customerRequest.modeOfPayment,
       banks: banksData,
-      dollarRate: customerRequest.dollarRate,
-      balance: customerRequest.balance,
+      dollarRate: parseCurrencyValue(customerRequest.dollarRate),
+      balance: parseCurrencyValue(customerRequest.balance),
       paymentCurrency: customerRequest.paymentCurrency,
       paymentEvidence: [{ receipt: "-" }],
-      dollarAmount: customerRequest.amountDollar,
-      amount: customerRequest.totalAmountNaira || 0,
+      dollarAmount: parseCurrencyValue(customerRequest.amountDollar),
+      amount: parseCurrencyValue(customerRequest.totalAmountNaira) || 0,
       deposit: 0.0,
       channel: 'Web'
     };
