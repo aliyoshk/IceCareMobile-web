@@ -57,6 +57,10 @@
 
     <Spinner :loading="loading" />
 
+    <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
+        :success="apiStatus" :emptyList="isEmptyList" 
+    />
+
   </div>
 </template>
 
@@ -71,6 +75,7 @@ import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
+import CustomDialog from '../components/CustomDialog.vue';
 import { handleApiError } from '../../core/utils/errorHandler';
 import { getPendingRegistration, getApprovedUsers, getRejectedUsers, attestRegistration } from '@/domain/useCases/dashboardUseCase';
 import ExcelJS from 'exceljs';
@@ -90,6 +95,10 @@ const response = ref([]);
 const isPending = ref(false);
 const isRejected = ref(false);
 const isAttested = ref(false);
+const responseMessage = ref('')
+const apiStatus = ref(false);
+const showApiDialog = ref(false);
+const isEmptyList = ref(false);
 
 const isDialogVisible = ref(false);
 const dialogTitle = ref('');
@@ -136,26 +145,20 @@ const onMountedHandler = async () => {
 
     totalRecord.value = response.value.length;
     console.log("Total record lenght" + totalRecord.value);
-
-    // getPaymentResponse.value.forEach((item, index) => {
-    //   transactionVolume.value += item.dollarAmount;
-    // });
-
-    // totalTransaction.value = formatCurrency(transactionVolume.value, 'USD');
-    // console.log('Transaction volume in loop', 'item', formatCurrency(transactionVolume.value, 'USD'));
-
   }
   catch (error) {
-    response.value = [];
-    // toast.success('Suspected error:', handleApiError(error));
-    // const errorMessage = handleApiError(error);
+      showApiDialog.value = true;
+      apiStatus.value = false;
+      responseMessage.value = error.message;
+      isEmptyList.value = error.message.includes('No record found');
+    } 
+    finally {
+      loading.value = false;
+    }
+};
 
-    console.log('Suspected errorr', error.message)
-    alert(error.message);
-  }
-  finally {
-    loading.value = false;
-  }
+const done = () => {
+  showApiDialog.value = false;
 };
 
 const filteredResponse = computed(() => {

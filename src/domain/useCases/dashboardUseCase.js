@@ -285,10 +285,10 @@ export const addCompanyAccountUseCase = async (accountRequest) => {
   }
 };
 
-export const addCompanyPhoneUseCase = async (phoneNumber) => {
+export const addCompanyPhoneUseCase = async (phoneNumbeRequest) => {
   try {
-    console.log('dashboardUseCase', phoneNumber);
-    const response = await dashboardRepository.addCompanyPhoneNumber(phoneNumber);
+    console.log('dashboardUseCase', phoneNumbeRequest);
+    const response = await dashboardRepository.addCompanyPhoneNumber(phoneNumbeRequest);
     console.log('Response from API:', response);
     return response;
   } 

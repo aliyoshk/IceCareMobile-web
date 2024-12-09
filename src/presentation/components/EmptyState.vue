@@ -44,6 +44,7 @@
   .empty-state-message {
     margin-top: 8px;
     font-size: 16px;
+    text-align: center;
   }
   h2, p {
     align-content: center;

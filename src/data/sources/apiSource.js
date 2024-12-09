@@ -316,10 +316,10 @@ export const apiSource = {
     }
   },
 
-  async addCompanyPhoneNumber(phoneNumber) {
+  async addCompanyPhoneNumber(phoneNumbeRequest) {
     try {
-      console.log('apiSource', phoneNumber);
-      const response = await authService.addCompanyPhoneNumber(phoneNumber);
+      console.log('apiSource', phoneNumbeRequest);
+      const response = await authService.addCompanyPhoneNumber(phoneNumbeRequest);
       return response;
     } 
     catch (error) {

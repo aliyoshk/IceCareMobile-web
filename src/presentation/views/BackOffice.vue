@@ -163,14 +163,14 @@ headerCardContents.value = [
 ];
 
 itemList.value = [
-    { heading: 'Pending Request', subheading: 'Incoming request', count: 120, status: 'Pending' },
-    { heading: 'Approved Request', subheading: 'Request Approved', count: 20, status: 'Approved' },
-    { heading: 'Rejected Request', subheading: 'Request Rejected', count: 12, status: 'Rejected' },
+    { heading: 'Pending Request', subheading: 'Incoming request', count: '', status: 'Pending' },
+    { heading: 'Approved Request', subheading: 'Request Approved', count: '', status: 'Approved' },
+    { heading: 'Rejected Request', subheading: 'Request Rejected', count: '', status: 'Rejected' },
 ];
 
 transferItems.value = [
-    { heading: 'Incoming Notification', subheading: 'Incoming transfer list', count: 120, status: 'Pending' },
-    { heading: 'Confirmed Transfer', subheading: 'Approved transfer list', count: 120, status: 'Approved' }
+    { heading: 'Incoming Notification', subheading: 'Incoming transfer list', count: '', status: 'Pending' },
+    { heading: 'Confirmed Transfer', subheading: 'Approved transfer list', count: '', status: 'Approved' }
 ];
 
 const viewRecord = (item) => {
@@ -182,7 +182,6 @@ const viewRegistrationRecord = (item) => {
     toast.success('Viewing details for: ' + item);
     router.push({ name: 'Transfer', query: { selectedCard: item } });
 };
-;
 
 const addPhoneClick = () => {
     newPhoneValue.value = ''
@@ -194,7 +193,8 @@ const addAccountClick = () => {
 };
 
 const addNumber = async () => {
-    if (newPhoneValue.value < 11 || newPhoneValue.value > 11 ) {
+    console.log("Company add phone response", newPhoneValue.value)
+    if (newPhoneValue.value.length !== 11) {
         toast.error("Phone number should be 11 digit long")
         return
     }
@@ -202,12 +202,14 @@ const addNumber = async () => {
     showPhoneForm.value = false
     loading.value = true;
     try {
-        console.log("Request value for phone number", newPhoneValue.value);
-        const response = addCompanyPhoneUseCase("0" + newPhoneValue.value)
-        console.log("Company add phone response", response)
+
+        const phoneNumberRequest = { phoneNumber: newPhoneValue.value };
+
+        console.log("Request value for phone number", phoneNumberRequest);
+        const response = addCompanyPhoneUseCase(phoneNumberRequest);
+        console.log("Company add phone response", response);
 
         newPhoneValue.value = '';
-        toast.success(response.message);
 
         if (response.success) {
 
@@ -218,6 +220,10 @@ const addNumber = async () => {
         }
     }
     catch (error) {
+        console.log("Checking error", error);
+        console.log("Checking error", error.message);
+        console.log("Checking error", error.data.message);
+        toast.success(error.message);
         showApiDialog.value = true;
         apiStatus.value = false;
         responseMessage.value = error.message;
@@ -238,7 +244,7 @@ const validateFormField = (request) => {
     } else if (request.AccountNumber === '') {
         toast.error('Enter account number');
         return false;
-    } else if (request.AccountNumber < 10 || request.AccountNumber > 10) {
+    } else if (request.AccountNumber !== 10) {
         toast.error('Account number should be 10 digits');
         return false;
     }else if (request.AccountName === '') {
@@ -256,7 +262,7 @@ const handleAccountFormSubmission = async (accountDetailsRequest) => {
         showAccountForm.value = true;
         return;
     }
-
+    loading.value = true;
     try {
         const accountRequest = {
             bankName: accountDetailsRequest.BankName,
@@ -265,9 +271,7 @@ const handleAccountFormSubmission = async (accountDetailsRequest) => {
         };
 
         console.log('This is the content of:', accountRequest);
-
         const response = await addCompanyAccountUseCase(accountRequest);
-
         console.log('This is the response of:', response);
 
         if (response.data.success) {
@@ -283,14 +287,16 @@ const handleAccountFormSubmission = async (accountDetailsRequest) => {
         showApiDialog.value = true;
         apiStatus.value = false;
         responseMessage.value = error.message;
+    } finally {
+        loading.value = false;
     }
 };
 
 const DeleteCompanyAccount = async (account) => {
+
+    loading.value = true;
     try {
         const response = await deleteCompanyAccountUseCase(account.id);
-
-
         console.log("The delete company account response ", response);
 
         if (response.success) {
@@ -306,6 +312,8 @@ const DeleteCompanyAccount = async (account) => {
         showApiDialog.value = true;
         apiStatus.value = false;
         responseMessage.value = error.message;
+    } finally {
+        loading.value = false;
     }
 };
 

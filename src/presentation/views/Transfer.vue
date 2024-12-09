@@ -61,6 +61,10 @@
 
         <Spinner :loading="loading" />
 
+        <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
+        :success="apiStatus" :emptyList="isEmptyList" 
+        />
+
     </div>
 </template>
 
@@ -74,6 +78,7 @@ import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
+import CustomDialog from '../components/CustomDialog.vue';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import { getPendingTransfer, getApprovedTransfer, approveTransfer } from '@/domain/useCases/dashboardUseCase';
 import ExcelJS from 'exceljs';
@@ -89,6 +94,10 @@ const searchQuery = ref('');
 const totalRecord = ref(0);
 const response = ref([]);
 const totalAmount = ref(0);
+const responseMessage = ref('')
+const apiStatus = ref(false);
+const showApiDialog = ref(false);
+const isEmptyList = ref(false);
 
 const selectedCard = route.query.selectedCard;
 
@@ -119,14 +128,19 @@ onMounted(async () => {
         console.log("Total record lenght" + totalRecord.value);
     }
     catch (error) {
-        response.value = [];
-        console.log('Suspected errorr', error.message)
-        alert(error.message);
-    }
+      showApiDialog.value = true;
+      apiStatus.value = false;
+      responseMessage.value = error.message;
+      isEmptyList.value = error.message.includes('No record found');
+    } 
     finally {
-        loading.value = false;
+      loading.value = false;
     }
 });
+
+const done = () => {
+  showApiDialog.value = false;
+};
 
 const calculateTotalAmount = (bankDetails) => {
     if (!bankDetails || bankDetails.length === 0) {

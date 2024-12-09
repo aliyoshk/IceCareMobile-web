@@ -305,14 +305,14 @@ export const dashboardRepository = {
     }
   },
 
-  async addCompanyPhoneNumber(phoneNumber) {
+  async addCompanyPhoneNumber(phoneNumbeRequest) {
     try {
-      console.log('dashboardRepository', phoneNumber);
-      const response = await apiSource.addCompanyPhoneNumber(phoneNumber)
+      console.log('dashboardRepository', phoneNumbeRequest);
+      const response = await apiSource.addCompanyPhoneNumber(phoneNumbeRequest)
       return response;
     } 
     catch (error) {
-      console.error('Error in dashboardRepository.addCompanyPhoneNumber:', phoneNumber, ":::::", error);
+      console.error('Error in dashboardRepository.addCompanyPhoneNumber:', phoneNumbeRequest, ":::::", error);
       throw new Error(error.message || 'Failed to add phone');
     }
   },

@@ -309,10 +309,10 @@ export const authService = {
     }
   },
 
-  async addCompanyPhoneNumber(phoneNumber) {
+  async addCompanyPhoneNumber(phoneNumbeRequest) {
     try {
-      console.log('Sending adminRequest:', phoneNumber);
-      const response = await apiClient.post(API_ENDPOINTS.ADD_COMPANY_NUMBERS, phoneNumber);
+      console.log('Sending adminRequest:', phoneNumbeRequest);
+      const response = await apiClient.post(API_ENDPOINTS.ADD_COMPANY_NUMBERS, phoneNumbeRequest);
       return response;
     } 
     catch (error) {

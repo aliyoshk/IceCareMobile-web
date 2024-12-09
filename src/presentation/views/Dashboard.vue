@@ -44,7 +44,7 @@
         <h3 id="title">Recent Incoming Transfer</h3>
 
         <div v-if="recentTransfers.length === 0" class="empty-state">
-          <EmptyState :image="ic_no_transfer" :title="'No transfer history”'"
+          <EmptyState :image="ic_no_transfer" :title="'No transfer history'"
             :message="'You cannot view  transaction history at the moment until a transfer has been performed'" />
         </div>
 
@@ -67,7 +67,7 @@
         <h3 id="title">Transaction History</h3>
 
         <div v-if="recentTransactions.length === 0" class="empty-state">
-          <EmptyState :image="ic_no_history" :title="'No “transaction history” ”'"
+          <EmptyState :image="ic_no_history" :title="'No transaction history'"
             :message="'You cannot view transaction history at the moment until a transfer has been performed'" />
         </div>
 
@@ -98,7 +98,7 @@
         <h3 id="title">Pending Registrations</h3>
 
         <div v-if="pendingRegistration.length === 0" class="empty-state">
-          <EmptyState :image="ic_no_history" :title="'No “registration history”'"
+          <EmptyState :image="ic_barchart" :title="'No registration history'"
             :message="'You cannot view anything at the moment, until request has been made'" />
         </div>
 
@@ -124,7 +124,7 @@
         <h3>Pricing Trend</h3>
 
         <div v-if="pieChartData.length === 0" class="empty-state">
-          <EmptyState :image="ic_pieChart" :title="'No “pricing trends” ”'"
+          <EmptyState :image="ic_pieChart" :title="'No pricing trends'"
             :message="'You cannot view your settlements at the moment, no transaction performed'" />
         </div>
 
@@ -339,7 +339,7 @@ const onMountedHandler = async () => {
 
     metrics.value = dashboardData.metrics || [
       { title: 'Current Month Earnings', value: formatCurrency(dashboardData.data.totalMonthlyNairaTransfer) || formatCurrency(0), icon: ic_image },
-      { title: 'Total No of Transactions', value: '1,500', icon: ic_image },
+      { title: 'Total No of Transactions', value: dashboardData.data.monthlyTransfers.length, icon: ic_image },
       { title: 'Received Today', value: formatCurrency('0.00'), icon: ic_image },
       { title: 'Monthly Dollar Spent', value: formatCurrency(dashboardData.data.totalMonthlyDollarSpent, 'USD') || formatCurrency(0, 'USD'), icon: ic_image },
     ];
@@ -351,12 +351,12 @@ const onMountedHandler = async () => {
     recentTransfers.value = dashboardData.data.pendingTransfer || [];
     pendingRegistration.value = dashboardData.data.pendingRegistration || [];
 
-    recentTransactions.value = dashboardData.recentTransactions || [
-      { date: '2024-09-01', reference: 'Ref123', name: 'John Doe', amount: '$100', paymentMethod: 'Transfer', status: 'Completed' },
-      { date: '2024-09-02', reference: 'Ref124', name: 'Jane Smith', amount: '$150', paymentMethod: 'Cash', status: 'Pending' },
-      { date: '2024-09-02', reference: 'Ref124', name: 'Jane Smith', amount: '$150', paymentMethod: 'Transfer', status: 'Pending' },
-      { date: '2024-09-01', reference: 'Ref123', name: 'John Doe', amount: '$100', paymentMethod: 'Transfer', status: 'Completed' },
-    ];
+    // recentTransactions.value = dashboardData.recentTransactions || [
+    //   { date: '2024-09-01', reference: 'Ref123', name: 'John Doe', amount: '$100', paymentMethod: 'Transfer', status: 'Completed' },
+    //   { date: '2024-09-02', reference: 'Ref124', name: 'Jane Smith', amount: '$150', paymentMethod: 'Cash', status: 'Pending' },
+    //   { date: '2024-09-02', reference: 'Ref124', name: 'Jane Smith', amount: '$150', paymentMethod: 'Transfer', status: 'Pending' },
+    //   { date: '2024-09-01', reference: 'Ref123', name: 'John Doe', amount: '$100', paymentMethod: 'Transfer', status: 'Completed' },
+    // ];
 
     pieChartData.value.labels = dashboardData.pieChartLabels || ['Category A', 'Category B', 'Category C', 'Category D'];
     pieChartData.value.datasets[0].data = dashboardData.pieChartData || [300, 450, 100, 150];
