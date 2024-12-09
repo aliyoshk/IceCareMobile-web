@@ -167,7 +167,7 @@ const validateFormField = (supplierRequest) => {
     return false;
   }
 
-  return true; ``
+  return true;
 };
 
 const handleFormSubmission = async (supplierRequest) => {

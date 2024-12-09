@@ -221,10 +221,7 @@ const addNumber = async () => {
         }
     }
     catch (error) {
-        console.log("Checking error", error);
-        console.log("Checking error", error.message);
-        console.log("Checking error", error.data.message);
-        toast.success(error.message);
+        toast.error(error.message);
         showApiDialog.value = true;
         apiStatus.value = false;
         responseMessage.value = error.message;
@@ -333,9 +330,6 @@ const onMountedHandler = async () => {
     selectedCardName.value = 'Incoming Transfer'
     companyAccount.value = [];
 
-    // const holder = localStorageSource.getDashboardData().companyPhoneNumbers.split(';').map(phone => phone.trim()) || '';
-    // phoneNumbers.value.push(...holder);
-
     localStorageSource.getDashboardData().companyPhoneNumbers.forEach(element => {
         phoneNumbers.value.push(element.phoneNumber);
     });
@@ -386,7 +380,6 @@ onMounted(() => {
     transition: border-color 0.3s;
     border: 2px solid transparent;
     flex: 1 1 45%;
-    /* Flex item for responsiveness */
 }
 
 .card.header.selected {
@@ -417,7 +410,6 @@ onMounted(() => {
     padding: 15px;
     border-radius: 8px;
     flex-basis: calc(45% - 20px);
-    /* Adjust for responsiveness */
     margin: 20px;
 }
 
@@ -481,7 +473,6 @@ hr {
     border-radius: 8px;
     box-sizing: border-box;
     flex: 1 1 calc(30% - 15px);
-    /* Flex item for responsiveness */
 }
 
 img {
