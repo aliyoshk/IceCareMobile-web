@@ -115,6 +115,7 @@
         </section>
 
         <Spinner :loading="loading" />
+
         <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog"
             @confirm="showApiDialog = false" :success="apiStatus" />
 
@@ -244,7 +245,8 @@ const validateFormField = (request) => {
     } else if (request.AccountNumber === '') {
         toast.error('Enter account number');
         return false;
-    } else if (request.AccountNumber !== 10) {
+    } else if (request.AccountNumber.length !== 10) {
+        console.log("Account number should be 10 digits" + request.AccountNumber);
         toast.error('Account number should be 10 digits');
         return false;
     }else if (request.AccountName === '') {
