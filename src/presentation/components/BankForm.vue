@@ -14,7 +14,7 @@
                   id="balance" 
                   v-model="bank.Amount" 
                   placeholder="Enter dollar amount" 
-                  @input="handleCurrencyInput($event, 'USD')" 
+                  @input="handleCurrencyInput($event, 'NGN')" 
                   />
             </div>
 
@@ -49,7 +49,7 @@ const submitForm = () => {
 
 const handleCurrencyInput = (event, currency) => {
     formatAmountToCurrency(event, currency);
-    this.payment.DollarAmount = event.target.value;
+    bank.value.Amount = event.target.value;
 };
 
 </script>

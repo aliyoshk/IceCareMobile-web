@@ -73,17 +73,17 @@ const submitForm = () => {
 
 const handleCurrencyInput = (event, currency) => {
     formatAmountToCurrency(event, currency);
-    this.payment.DollarAmount = event.target.value;
+    payment.value.DollarAmount = event.target.value;
 };
 
 const handleDepositInput = (event) => {
     formatAmountToCurrency(event);
-    this.payment.Deposit = event.target.value;
+    payment.value.Deposit = event.target.value;
 };
 
 const handleBalanceInput = (event) => {
     formatAmountToCurrency(event);
-    this.payment.Balance = event.target.value;
+    payment.value.Balance = event.target.value;
 };
 
 </script>

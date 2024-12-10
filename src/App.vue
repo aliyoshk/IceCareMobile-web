@@ -91,6 +91,16 @@
       </main>
     </div>
   </div>
+
+  <CustomDialog 
+      v-if="showTimeoutDialog" 
+      :message="'Your session has timed out. Please confirm to proceed to the dashboard.'" 
+      :show="showTimeoutDialog" 
+      @confirm="done"
+      :success="false" 
+      :emptyList="true" 
+  />
+
 </template>
 
 <script>
@@ -111,6 +121,7 @@ export default {
     const adminStore = storesManager();
     const showDropdown = ref(false);
     const userStore = useUserStore();
+    const showTimeoutDialog = ref(false)
 
     const isLoginRoute = computed(() => route.path === '/login');
     const isRegistrationRoute = computed(() => route.path === '/registration');
@@ -125,6 +136,10 @@ export default {
       userStore.logout();
       showDropdown.value = false;
       router.go();
+    };
+
+    const done = () => {
+      showTimeoutDialog.value = false;
     };
 
     const onMountedHandler = async () => {
@@ -142,6 +157,7 @@ export default {
     });
 
     onBeforeUnmount(() => {
+      showTimeoutDialog.value = true;
       stopSessionTimer();
     });
 
@@ -155,6 +171,8 @@ export default {
       showDropdown,
       showAdminPanel: computed(() => localStorageSource.getUserData()?.showAdminPanel),
       logout,
+      done,
+      showTimeoutDialog
     };
   }
 };

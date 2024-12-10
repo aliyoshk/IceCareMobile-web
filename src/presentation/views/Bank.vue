@@ -222,7 +222,6 @@ const handleFormSubmission = async (bankRequest) => {
   }
 
   try {
-
     const bankRequestData = {
       entityName: bankRequest.Name,
       bankName: onBankChanged.value,
