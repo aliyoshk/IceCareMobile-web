@@ -166,12 +166,6 @@ const complete = (customer) => {
   seletedCustomer.value = [];
   seletedCustomer.value = customer;
   showCompletionForm.value = true;
-  // if (localStorageSource.getDashboardData().availableDollarAmount < customer.dollarAmount) {
-    
-  // }
-  // else {
-  //   alert('There is no suffiecient dollar to complete customer payment');
-  // }
 };
 
 const completePayment = async () => {
@@ -294,6 +288,7 @@ const onMountedHandler = async () => {
   }
   finally {
     loading.value = false;
+    isEmptyList.value = false;
   }
 };
 
@@ -342,9 +337,8 @@ const handleFormSubmission = async (customerRequest) => {
     showForm.value = true;
     return;
   }
-
+  loading.value = true;
   try {
-
     const banksData = customerRequest.banks.map(bank => ({
       bankName: bank.name,
       amountTransferred: parseCurrencyValue(bank.amount) || 0
@@ -381,6 +375,9 @@ const handleFormSubmission = async (customerRequest) => {
     showApiDialog.value = true;
     apiStatus.value = false;
     responseMessage.value = error.message;
+  }
+  finally {
+    loading.value = false;
   }
 };
 

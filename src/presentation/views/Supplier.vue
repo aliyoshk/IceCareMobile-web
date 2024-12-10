@@ -179,7 +179,7 @@ const handleFormSubmission = async (supplierRequest) => {
     showForm.value = true;
     return;
   }
-
+  loading.value = true;
   try {
     const banksData = supplierRequest.banks.map(bank => ({
       bankName: bank.name,
@@ -215,6 +215,9 @@ const handleFormSubmission = async (supplierRequest) => {
     showApiDialog.value = true;
     apiStatus.value = false;
     responseMessage.value = error.message;
+  }
+  finally {
+    loading.value = false;
   }
 };
 
@@ -306,6 +309,7 @@ const onMountedHandler = async () => {
   }
   finally {
     loading.value = false;
+    isEmptyList.value = false;
   }
 };
 

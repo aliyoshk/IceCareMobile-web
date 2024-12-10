@@ -189,6 +189,7 @@ const onMountedHandler = async () => {
   }
   finally {
     loading.value = false;
+    isEmptyList.value = false;
   }
 };
 

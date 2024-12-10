@@ -95,15 +95,22 @@
       <div class="form-item horizontal-group">
         <div class="form-item-wrapper">
           <label for="dollar-rate">Dollar Rate</label>
-          <input type="number" id="dollar-rate" v-model="supplier.dollarRate" placeholder="Enter dollar rate" />
+          <input 
+            type="text" 
+            id="dollar-rate" 
+            v-model="supplier.dollarRate" 
+            placeholder="Enter dollar rate" 
+            @input="handleDollarRateInput($event, 'NGN')" 
+          />
         </div>
         <div class="form-item-wrapper">
           <label for="amount-dollar">Amount in Dollar</label>
-          <input type="text" 
-          id="amount-dollar" 
-          v-model="supplier.amountDollar" 
-          placeholder="Enter amount in Dollar"
-          @input="handleCurrencyInput($event, 'USD')"  
+          <input 
+            type="text" 
+            id="amount-dollar" 
+            v-model="supplier.amountDollar" 
+            placeholder="Enter amount in Dollar"
+            @input="handleCurrencyInput($event, 'USD')"  
           />
         </div>
       </div>
@@ -166,7 +173,6 @@ export default {
     },
     handleCurrencyInput(event, currency) {
       formatAmountToCurrency(event, currency);
-      
       if (currency === 'USD') {
         this.supplier.amountDollar = event.target.value;
       } else if (currency === 'NGN') {
@@ -176,6 +182,10 @@ export default {
     handleBankCurrencyInput(event, currency, index) {
       formatAmountToCurrency(event, currency);
       this.supplier.banks[index].amount = event.target.value;
+    },
+    handleDollarRateInput(event, currency) {
+      formatAmountToCurrency(event, currency);
+      this.supplier.dollarRate = event.target.value;
     },
   },
   computed: {
@@ -208,8 +218,8 @@ export default {
       const amountDollar = parseCurrencyValue(this.supplier.amountDollar);
       const dollarRate = parseCurrencyValue(this.supplier.dollarRate);
 
-      if (amountDollar > 0 && totalAmountNaira > 0 && this.supplier.dollarRate > 0) {
-        this.supplier.balance = totalAmountNaira - (amountDollar * this.supplier.dollarRate);
+      if (amountDollar > 0 && totalAmountNaira > 0 && dollarRate > 0) {
+        this.supplier.balance = totalAmountNaira - (amountDollar * dollarRate);
       }
       else {
         this.supplier.balance = 0;
