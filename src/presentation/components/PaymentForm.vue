@@ -10,7 +10,8 @@
             <div class="form-item">
                 <label for="amount">Amount($)</label>
                 <input 
-                    type="text" id="amount" 
+                    type="text" 
+                    id="amount" 
                     v-model="payment.DollarAmount" 
                     placeholder="Enter dollar amount" 
                     @input="handleCurrencyInput($event, 'USD')" 
@@ -19,12 +20,24 @@
 
             <div class="form-item">
                 <label for="balance">Balance</label>
-                <input type="text" id="balance" v-model="payment.Balance" placeholder="Enter balance if any" />
+                <input 
+                    type="text" 
+                    id="balance" 
+                    v-model="payment.Balance" 
+                    placeholder="Enter balance if any" 
+                    @input="handleBalanceInput($event)" 
+                />
             </div>
 
             <div class="form-item">
                 <label for="deposit">Deposit</label>
-                <input type="text" id="deposit" v-model="payment.Deposit" placeholder="Enter deposit if any" />
+                <input 
+                    type="text" 
+                    id="deposit" 
+                    v-model="payment.Deposit" 
+                    placeholder="Enter deposit if any" 
+                    @input="handleDepositInput($event)" 
+                />
             </div>
 
             <div class="form-actions">
@@ -61,6 +74,16 @@ const submitForm = () => {
 const handleCurrencyInput = (event, currency) => {
     formatAmountToCurrency(event, currency);
     this.payment.DollarAmount = event.target.value;
+};
+
+const handleDepositInput = (event) => {
+    formatAmountToCurrency(event);
+    this.payment.Deposit = event.target.value;
+};
+
+const handleBalanceInput = (event) => {
+    formatAmountToCurrency(event);
+    this.payment.Balance = event.target.value;
 };
 
 </script>

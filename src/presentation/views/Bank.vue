@@ -101,6 +101,7 @@ import ConfirmDialog from '../components/ConfirmDialog.vue';
 import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
 import { localStorageSource } from '@/data/sources/localStorage';
+import { parseCurrencyValue } from '@/core/utils/helpers';
 import router from '../router';
 import EmptyState from '../components/EmptyState.vue';
 
@@ -203,7 +204,7 @@ const validateFormField = (request) => {
   if (request.Name.trim() === '') {
     toast.success('Enter Customer name');
     return false;
-  } else if (request.Amount === '' || request.Amount <= 0) {
+  } else if (parseCurrencyValue(request.Amount) === '' || parseCurrencyValue(request.Amount) <= 0) {
     toast.success('Enter dollar amount');
     return false;
   }
@@ -227,7 +228,7 @@ const handleFormSubmission = async (bankRequest) => {
       bankName: onBankChanged.value,
       personType: 'Others',
       expenseType: 'Debit',
-      amount: bankRequest.Amount,
+      amount: parseCurrencyValue(bankRequest.Amount),
     };
 
     console.log('This is the content of:', bankRequestData);

@@ -89,6 +89,7 @@ import CustomDialog from '../components/CustomDialog.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import { exportPDF } from '@/core/utils/exportToPDF';
 import { exportExcel } from '@/core/utils/exportToExcel';
+import { parseCurrencyValue } from '@/core/utils/helpers';
 import router from '../router';
 
 const loading = ref(false);
@@ -173,11 +174,11 @@ const validateFormField = (request) => {
   if (request.CustomerName.trim() === '') {
     toast.success('Enter Customer name');
     return false;
-  } else if (request.DollarAmount === '') {
+  } else if (parseCurrencyValue(request.DollarAmount) === '') {
     toast.success('Enter dollar amount');
     return false;
   }
-  else if (request.Balance > 0 && request.Deposit > 0) {
+  else if (parseCurrencyValue(request.Balance) > 0 && parseCurrencyValue(request.Deposit) > 0) {
     toast.success('Balance and Deposit cannot have value at the same time');
     return false;
   }
@@ -198,9 +199,9 @@ const handleFormSubmission = async (paymentRequest) => {
 
     const paymentRequestData = {
       customerName: paymentRequest.CustomerName,
-      dollarAmount: paymentRequest.DollarAmount,
-      balance: paymentRequest.Balance,
-      deposit: paymentRequest.Deposit
+      dollarAmount: parseCurrencyValue(paymentRequest.DollarAmount),
+      balance: parseCurrencyValue(paymentRequest.Balance),
+      deposit: parseCurrencyValue(paymentRequest.Deposit)
     };
 
     console.log('This is the content of:', paymentRequestData);
