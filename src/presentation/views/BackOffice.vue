@@ -152,7 +152,7 @@ const selectedCardName = ref('');
 const transferItems = ref([]);
 const showPhoneForm = ref(false);
 const newPhoneValue = ref('');
-const isPhoneAdded = ref(false);
+const isApiTriggered = ref(false);
 const phoneNumbers = ref([]);
 const showAccountForm = ref(false);
 const companyAccount = ref([]);
@@ -194,34 +194,28 @@ const addAccountClick = () => {
 };
 
 const addNumber = async () => {
-    console.log("Company add phone response", newPhoneValue.value)
     if (newPhoneValue.value.length !== 11) {
-        toast.error("Phone number should be 11 digit long")
-        return
+        toast.error("Phone number should be 11 digit long");
+        return;
     }
-
-    showPhoneForm.value = false
+    showPhoneForm.value = false;
+    const phoneNumberRequest = { 
+        phoneNumber: newPhoneValue.value 
+    };
+    newPhoneValue.value = '';
     loading.value = true;
     try {
-
-        const phoneNumberRequest = { phoneNumber: newPhoneValue.value };
-
-        console.log("Request value for phone number", phoneNumberRequest);
-        const response = addCompanyPhoneUseCase(phoneNumberRequest);
-        console.log("Company add phone response", response);
-
-        newPhoneValue.value = '';
-
-        if (response.success) {
-
-            isPhoneAdded.value = true;
+        const response = await addCompanyPhoneUseCase(phoneNumberRequest);
+        console.log("Add phone number response" + response);
+        
+        if (response.success || response.data.success) {
+            isApiTriggered.value = true;
             showApiDialog.value = true;
             apiStatus.value = response.success;
             responseMessage.value = response.message;
         }
     }
     catch (error) {
-        toast.error(error.message);
         showApiDialog.value = true;
         apiStatus.value = false;
         responseMessage.value = error.message;
@@ -243,10 +237,9 @@ const validateFormField = (request) => {
         toast.error('Enter account number');
         return false;
     } else if (request.AccountNumber.length !== 10) {
-        console.log("Account number should be 10 digits" + request.AccountNumber);
         toast.error('Account number should be 10 digits');
         return false;
-    }else if (request.AccountName === '') {
+    } else if (request.AccountName === '') {
         toast.error('Enter account name');
         return false;
     }
@@ -254,7 +247,6 @@ const validateFormField = (request) => {
 };
 
 const handleAccountFormSubmission = async (accountDetailsRequest) => {
-    console.log('Details:', accountDetailsRequest);
     showAccountForm.value = false;
 
     if (!validateFormField(accountDetailsRequest)) {
@@ -262,23 +254,20 @@ const handleAccountFormSubmission = async (accountDetailsRequest) => {
         return;
     }
     loading.value = true;
+    const accountRequest = {
+        bankName: accountDetailsRequest.BankName,
+        accountNumber: accountDetailsRequest.AccountNumber,
+        accountName: accountDetailsRequest.AccountName
+    };
+
     try {
-        const accountRequest = {
-            bankName: accountDetailsRequest.BankName,
-            accountNumber: accountDetailsRequest.AccountNumber,
-            accountName: accountDetailsRequest.AccountName
-        };
-
-        console.log('This is the content of:', accountRequest);
         const response = await addCompanyAccountUseCase(accountRequest);
-        console.log('This is the response of:', response);
-
-        if (response.data.success) {
-            isPhoneAdded.value = true;
+        if (response.success) {
+            isApiTriggered.value = true;
             showApiDialog.value = true;
-            apiStatus.value = response.data.success;
-            responseMessage.value = response.data.message || "Record added Successful";
-            
+            apiStatus.value = response.success;
+            responseMessage.value = response.message || "Record added Successful";
+                
             localStorageSource.savedCompanyAccount(response.data.data);
         }
     }
@@ -299,7 +288,7 @@ const DeleteCompanyAccount = async (account) => {
         console.log("The delete company account response ", response);
 
         if (response.success) {
-            isPhoneAdded.value = true;
+            isApiTriggered.value = true;
             showApiDialog.value = true;
             apiStatus.value = true;
             responseMessage.value = response.message || "Record deleted Successful";
@@ -317,10 +306,10 @@ const DeleteCompanyAccount = async (account) => {
 };
 
 watchEffect(() => {
-    if (isPhoneAdded.value === true) {
+    if (isApiTriggered.value === true) {
         nextTick(() => {
             onMountedHandler();
-            isPhoneAdded.value = false;
+            isApiTriggered.value = false;
         });
     }
 });
@@ -328,16 +317,18 @@ watchEffect(() => {
 const onMountedHandler = async () => {
     selectedIndex.value = 0;
     selectedCardName.value = 'Incoming Transfer'
+    phoneNumbers.value = [];
     companyAccount.value = [];
 
     localStorageSource.getDashboardData().companyPhoneNumbers.forEach(element => {
         phoneNumbers.value.push(element.phoneNumber);
+        console.log("Phone Number", phoneNumbers.value);
     });
 
     localStorageSource.getCompanyAccount().forEach(account => {
         companyAccount.value.push(account);
+        console.log("Account Number", companyAccount.value);
     });
-    console.log("The company accounts details are:", companyAccount.value);
 };
 
 onMounted(() => {

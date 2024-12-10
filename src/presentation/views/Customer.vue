@@ -170,7 +170,6 @@ const complete = (customer) => {
 
 const completePayment = async () => {
   if (upshoreCharges.value !== '' && upshoreCharges.value > 0) {
-    console.log(upshoreCharges.value + "has been added");
 
     loading.value = true;
 

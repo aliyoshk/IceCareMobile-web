@@ -204,9 +204,8 @@ export default {
       router.go();
     };
 
-
     const showAdminPanel = computed(() => {
-      return userStore.user?.showAdminPanel || false;
+      return userStore.user?.showAdminPanel || (localStorageSource.getUserData()?.showAdminPanel || false);
     });
 
     return {
