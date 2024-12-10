@@ -15,9 +15,6 @@ export const useUserStore = defineStore('user', {
         localStorageSource.saveUserData(userData.data);
         const token = userData.data.token;
         this.user = userData.data;
-
-        console.log('User logged in:', userData);
-        console.log('Lets verify the this. user:', this.user)
       
         localStorage.setItem('authToken', token);
         localStorage.setItem('user', JSON.stringify(userData.data));
@@ -25,7 +22,6 @@ export const useUserStore = defineStore('user', {
       } 
       catch (error) {
         this.error = error?.message || 'An unknown error occurred';
-        console.error('Login failed:', error.message);
       } 
     },
     logout() {
@@ -41,7 +37,6 @@ export const useUserStore = defineStore('user', {
     },
   },
 });
-
 
 export const storesManager = defineStore('admin', {
   state: () => ({

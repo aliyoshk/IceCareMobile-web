@@ -25,7 +25,6 @@
       <!-- <ErrorDialog v-if="error" :error="error" @close="clearError" /> -->
     </div>
 
-    <!-- Spinner component -->
     <Spinner :loading="loggingIn" />
 
 
@@ -36,6 +35,7 @@
 </template>
 
 <script>
+import { nextTick } from 'vue';
 import { useUserStore } from '../store/userStore';
 import ErrorDialog from '../components/ErrorDialog.vue';
 import Spinner from '../components/Spinner.vue';
@@ -60,10 +60,9 @@ export default {
       this.loggingIn = true;
       try {
         await this.userStore.login(this.email, this.password);
-
-        console.log('Stored token:', localStorage.getItem('authToken'));
-
+        //console.log('Stored token:', localStorage.getItem('authToken'));
         if (this.userStore.user) {
+          await nextTick();
           this.$router.push({ name: 'Dashboard' });
         } 
         else {

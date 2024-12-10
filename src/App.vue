@@ -94,7 +94,7 @@
 
   <CustomDialog 
       v-if="showTimeoutDialog" 
-      :message="'Your session has timed out. Please confirm to proceed to the dashboard.'" 
+      :message="errorMessage" 
       :show="showTimeoutDialog" 
       @confirm="done"
       :success="false" 
@@ -111,45 +111,54 @@ import { useRouter } from 'vue-router';
 import { storesManager } from '@/presentation/store/userStore';
 import { localStorageSource } from '@/data/sources/localStorage';
 import { useUserStore } from '@/presentation/store/userStore';
-import { startSessionTimer, stopSessionTimer } from '@/core/utils/sessionManager';
+import CustomDialog from '@/presentation/components/CustomDialog.vue';
+import { startSessionTimer, stopSessionTimer, setSessionTimeoutCallback } from '@/core/utils/sessionManager';
+import NetworkListener from "@/core/utils/networkListener";
 
 
 export default {
+  components: {
+    CustomDialog,
+  },
   setup() {
     const route = useRoute();
     const router = useRouter();
     const adminStore = storesManager();
     const showDropdown = ref(false);
     const userStore = useUserStore();
-    const showTimeoutDialog = ref(false)
+    const showTimeoutDialog = ref(false);
+    const isOnline = ref(true);
+    const errorMessage = ref('');
+    let networkListener = null; 
 
     const isLoginRoute = computed(() => route.path === '/login');
     const isRegistrationRoute = computed(() => route.path === '/registration');
     const isTransferRoute = computed(() => route.path === '/transfer')
     const isTransferDetailsRoute = computed(() => route.path === '/transfer-details');
 
-    console.log('app.vuestored admin name:', adminStore?.name);
-    console.log('local storage admin name:', localStorageSource.getDashboardData()?.adminName);
+    // console.log('app.vuestored admin name:', adminStore?.name);
+    // console.log('local storage admin name:', localStorageSource.getDashboardData()?.adminName);
 
-
-    const logout = () => {
-      userStore.logout();
-      showDropdown.value = false;
-      router.go();
-    };
-
-    const done = () => {
-      showTimeoutDialog.value = false;
-    };
-
-    const onMountedHandler = async () => {
+    const setMountData = () => {
       startSessionTimer();
+
+      setSessionTimeoutCallback(() => {
+        setTimeoutDetails();
+      });
+
+      networkListener = new NetworkListener();
+      networkListener.subscribe(handleNetworkChange);
+      isOnline.value = navigator.onLine;
+    };
+    
+    const onMountedHandler = async () => {
+      setMountData();
     };
 
     watchEffect(() => {
       nextTick(() => {
-      onMountedHandler();
-    });
+        onMountedHandler();
+      });
     });
 
     onMounted(() => {
@@ -159,8 +168,46 @@ export default {
     onBeforeUnmount(() => {
       showTimeoutDialog.value = true;
       stopSessionTimer();
+
+      if (networkListener) {
+        networkListener.unsubscribe(handleNetworkChange);
+      }
     });
 
+    const setTimeoutDetails = () => {
+      
+      showTimeoutDialog.value = true;
+      errorMessage.value = "Your session has timed out. Please log in again.";
+    };
+
+    const handleNetworkChange = (status) => {
+      isOnline.value = status;
+      console.log("isOnline.value" + isOnline.value);
+      if (!isOnline.value) {
+        showTimeoutDialog.value = true;
+        errorMessage.value = "No internet connection. Please check your network and try again.";
+      }
+      else {
+        showTimeoutDialog.value = false;
+      }
+    };
+
+    const done = () => {
+      if (!isOnline.value) { return } 
+      showTimeoutDialog.value = false;
+      logout();
+    };
+
+    const logout = () => {
+      userStore.logout();
+      showDropdown.value = false;
+      router.go();
+    };
+
+
+    const showAdminPanel = computed(() => {
+      return userStore.user?.showAdminPanel || false;
+    });
 
     return {
       isLoginRoute,
@@ -169,10 +216,12 @@ export default {
       isTransferDetailsRoute,
       adminName: computed(() => localStorageSource.getDashboardData()?.adminName ?? adminStore.name),
       showDropdown,
-      showAdminPanel: computed(() => localStorageSource.getUserData()?.showAdminPanel),
+      showAdminPanel,
       logout,
       done,
-      showTimeoutDialog
+      showTimeoutDialog,
+      errorMessage,
+      isOnline,
     };
   }
 };
