@@ -202,17 +202,20 @@ const addNumber = async () => {
     const phoneNumberRequest = { 
         phoneNumber: newPhoneValue.value 
     };
-    newPhoneValue.value = '';
+
     loading.value = true;
     try {
         const response = await addCompanyPhoneUseCase(phoneNumberRequest);
         console.log("Add phone number response" + response);
         
-        if (response.success || response.data.success) {
+        if (response.data.success) {
             isApiTriggered.value = true;
             showApiDialog.value = true;
-            apiStatus.value = response.success;
-            responseMessage.value = response.message;
+            apiStatus.value = response.data.success;
+            responseMessage.value = response.data.message;
+
+            phoneNumbers.value.push(newPhoneValue.value);
+            localStorageSource.saveCompanyPhone(phoneNumbers.value);
         }
     }
     catch (error) {
@@ -320,9 +323,12 @@ const onMountedHandler = async () => {
     phoneNumbers.value = [];
     companyAccount.value = [];
 
-    localStorageSource.getDashboardData().companyPhoneNumbers.forEach(element => {
-        phoneNumbers.value.push(element.phoneNumber);
-        console.log("Phone Number", phoneNumbers.value);
+    // localStorageSource.getDashboardData().companyPhoneNumbers.forEach(element => {
+    //     phoneNumbers.value.push(element.phoneNumber);
+    //     console.log("Phone Number", phoneNumbers.value);
+    // });
+    localStorageSource.getCompanyPhone().forEach(element => {
+        phoneNumbers.value.push(element);
     });
 
     localStorageSource.getCompanyAccount().forEach(account => {

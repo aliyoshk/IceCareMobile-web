@@ -316,6 +316,7 @@ const onMountedHandler = async () => {
 
     localStorageSource.savedDashboardData(dashboardData.data);
     localStorageSource.savedCompanyAccount(dashboardData.data.companyAccounts);
+    localStorageSource.saveCompanyPhone(dashboardData.data.companyPhoneNumbers);
     store.setName(dashboardData.data.adminName);
 
     // Initialize monthly income array

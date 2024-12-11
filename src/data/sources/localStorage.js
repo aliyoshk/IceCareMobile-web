@@ -28,6 +28,16 @@ export const localStorageSource = {
     clearComapanyAccountData() {
       localStorage.removeItem('accountData');
     },
+
+    saveCompanyPhone(phoneDetails) {
+      localStorage.setItem('phoneData', JSON.stringify(phoneDetails));
+    },
+    getCompanyPhone() {
+      return JSON.parse(localStorage.getItem('phoneData'));
+    },
+    clearComapanyPhoneData() {
+      localStorage.removeItem('phoneData');
+    },
   };
   
   
