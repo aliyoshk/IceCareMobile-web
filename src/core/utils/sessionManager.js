@@ -1,7 +1,7 @@
 import { useUserStore } from '@/presentation/store/userStore';
 
 // const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-const SESSION_TIMEOUT = 1 * 45 * 1000;
+const SESSION_TIMEOUT = 3 * 45 * 1000;
 let timeout;
 let timeoutCallback;
 

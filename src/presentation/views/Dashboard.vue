@@ -111,8 +111,8 @@
           <div class="table-body">
             <div v-for="(registration, index) in pendingRegistration" :key="index" class="table-row">
               <div>{{ index + 1 }}</div>
-              <div>{{ registration.date }}</div>
-              <div>{{ transaction.name }}</div>
+              <div>{{ formatDate(registration.date) }}</div>
+              <div>{{ registration.name }}</div>
             </div>
           </div>
         </div>
@@ -352,12 +352,7 @@ const onMountedHandler = async () => {
     recentTransfers.value = dashboardData.data.pendingTransfer || [];
     pendingRegistration.value = dashboardData.data.pendingRegistration || [];
 
-    // recentTransactions.value = dashboardData.recentTransactions || [
-    //   { date: '2024-09-01', reference: 'Ref123', name: 'John Doe', amount: '$100', paymentMethod: 'Transfer', status: 'Completed' },
-    //   { date: '2024-09-02', reference: 'Ref124', name: 'Jane Smith', amount: '$150', paymentMethod: 'Cash', status: 'Pending' },
-    //   { date: '2024-09-02', reference: 'Ref124', name: 'Jane Smith', amount: '$150', paymentMethod: 'Transfer', status: 'Pending' },
-    //   { date: '2024-09-01', reference: 'Ref123', name: 'John Doe', amount: '$100', paymentMethod: 'Transfer', status: 'Completed' },
-    // ];
+    recentTransactions.value = dashboardData.recentTransactions || [];
 
     pieChartData.value.labels = dashboardData.pieChartLabels || ['Category A', 'Category B', 'Category C', 'Category D'];
     pieChartData.value.datasets[0].data = dashboardData.pieChartData || [300, 450, 100, 150];
