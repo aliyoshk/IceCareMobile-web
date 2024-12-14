@@ -44,29 +44,32 @@ export function formatAmountToCurrency(event, currency = 'NGN') {
     const input = event.target;
     let value = input.value.replace(/[^0-9.]/g, ''); // Remove non-numeric and non-period characters
 
-
     // If the input is empty, clear the field without the currency symbol
     if (!value) {
         input.value = '';
         return;
     }
 
+    // Allow only one decimal point
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts[1];
+    }
+
     const cursorPosition = input.selectionStart;
 
-    // Allow the user to manually enter a sign or decimals if desired
-    if (value && !isNaN(value)) {
-        value = parseFloat(value).toLocaleString('en-US', {
-            minimumFractionDigits: 0, // Allow user to type without forcing decimal places
-            maximumFractionDigits: 2  // User can add decimals manually if desired
-        });
-    }
+    // Format the integer part with commas and retain the decimal part
+    const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const decimalPart = parts[1] !== undefined ? '.' + parts[1] : '';
+
+    value = integerPart + decimalPart;
 
     // Attach the currency symbol
     const symbol = symbolMap[currency] || '';
     input.value = symbol + value;
 
     // Set the cursor position to avoid jumping
-    const newCursorPosition = symbol.length + value.length - (value.length - cursorPosition);
+    const newCursorPosition = symbol.length + value.length - (integerPart.length + decimalPart.length - cursorPosition);
     input.setSelectionRange(newCursorPosition, newCursorPosition);
 }
 
@@ -81,4 +84,21 @@ export function formatAmount(value, currency = 'NGN') {
     if (!value) return '';
     const numericValue = parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
     return `${currency} ${numericValue.toLocaleString()}`;
+}
+
+export function formatAmountToDecimal(amount) {
+    // Convert the input to a number safely
+    const numericAmount = Number(amount);
+
+    if (isNaN(numericAmount)) {
+        throw new Error("Invalid input: The provided amount is not a valid number.");
+    }
+
+    // Format the number for display, adding commas and fixing decimal places
+    const formattedAmount = numericAmount.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+    return formattedAmount;
 }
