@@ -27,7 +27,7 @@
                             <h5>Phone Number</h5>
                         </div>
                         <div class="name">
-                            <h3 id="boldText">{{ selectedCustomer.customerEmail }}</h3>
+                            <h3 id="boldText">{{ formatEmail(selectedCustomer.customerEmail) }}</h3>
                             <h3 id="boldText">{{ selectedCustomer.phoneNumber }}</h3>
                         </div>
                     </div>
@@ -96,7 +96,7 @@
 
     </div>
 
-    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
         <div class="modal-content">
             <img :src="currentImage" alt="Enlarged Receipt" class="modal-image" />
         </div>
@@ -115,7 +115,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { formatCurrency, formatDate } from '@/core/utils/helpers';
+import { formatCurrency, formatDate, formatEmail } from '@/core/utils/helpers';
+import Spinner from '../components/Spinner.vue';
 import { approveTransfer } from '@/domain/useCases/dashboardUseCase';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import CustomDialog from '../components/CustomDialog.vue';
@@ -135,7 +136,8 @@ const responseMessage = ref('')
 const apiStatus = ref(false);
 const showApiDialog = ref(false);
 
-const selectedCustomer = JSON.parse(route.query.selectedCustomer) || [];
+//const selectedCustomer = JSON.parse(route.query.selectedCustomer) || [];
+const selectedCustomer = JSON.parse(sessionStorage.getItem('selectedCustomer'));
 console.log(selectedCustomer);
 
 const approve = () => {
@@ -153,7 +155,8 @@ const cancelDialog = () => {
 };
 
 const goBack = () => {
-    router.push({ name: 'Transfer' });
+    window.history.back();
+    //router.push({ name: 'Transfer' });
 };
 
 const handleApprove = async () => {
@@ -214,6 +217,10 @@ const getImage = (receipt) => {
 const openModal = (receipt) => {
     currentImage.value = getImage(receipt);
     showModal.value = true;
+};
+
+const closeModal = () => {
+  showModal.value = false;
 };
 
 onMounted(() => {

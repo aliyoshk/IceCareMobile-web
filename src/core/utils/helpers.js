@@ -31,6 +31,14 @@ export function IsValidPhoneNumber(phoneNumber) {
     return phoneRegex.test(phoneNumber);
 }
 
+export function formatEmail(email) {
+    if (!email) return '';
+  
+    const [username, domain] = email.split('@');
+    const truncatedUsername = username.substring(0, 3);
+    return `${truncatedUsername}...@${domain}`;
+}
+
 export function formatAmountToCurrency(event, currency = 'NGN') {
     const symbolMap = {
         NGN: '₦',

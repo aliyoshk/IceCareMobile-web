@@ -55,7 +55,7 @@
                 <h4>Company Phone Number(s)</h4>
                 <hr id="line">
                 <div v-for="(phone, index) in phoneNumbers" :key="index">
-                    <h3>{{ phone }}</h3>
+                    <h3>{{index+1 +".\t\t\t"+ phone.phoneNumber }}</h3>
                     <hr id="line">
                 </div>
                 <div class="btn-container">
@@ -109,7 +109,7 @@
                 <img src="@/assets/ic_faq.svg" alt="FAQ Icon" />
                 <h4>FAQ</h4>
                 <ul>
-                    <li v-for="(phone, index) in phoneNumbers" :key="index">{{ phone.phoneNumber }}</li>
+                    <!-- <li v-for="(phone, index) in phoneNumbers" :key="index">{{ phone.phoneNumber }}</li> -->
                 </ul>
             </div>
         </section>
