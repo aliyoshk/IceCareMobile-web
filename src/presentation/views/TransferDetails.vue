@@ -81,9 +81,9 @@
                         <br>
                         <div id="spacer" v-for="(bank, index) in banks" :key="index">
                             <h5 id="boldText">{{ bank.bankName }}</h5>
-                            <h3>{{ bank.bankName }}</h3>
-                            <h3>{{ bank.bankName }}</h3>
-                            <h3>{{ bank.amountTransferred }}</h3>
+                            <h3>{{ bank.accountName }}</h3>
+                            <h3>{{ bank.accountNumber }}</h3>
+                            <h3>{{ formatCurrency(bank.amountTransferred, 'NGN') }}</h3>
                         </div>
                     </div>
                 </div>
