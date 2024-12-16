@@ -164,7 +164,6 @@ const goBack = () => {
 const view = (item) => {
     toast.success('Selected is:' + item.customerName);
     
-    // router.push({ name: 'TransferDetails', query: { selectedCustomer: item }});
     sessionStorage.setItem('selectedCustomer', JSON.stringify(item));
     router.push({ name: 'TransferDetails' });
     

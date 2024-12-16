@@ -26,7 +26,7 @@
                 <h5 id="count-section">Total count</h5>
                 <h4 id="bold-value">{{ item.count }}</h4>
                 <hr>
-                <h4 id="view" @click="viewRecord(item.status)">View</h4>
+                <h4 id="view" @click="viewRegistrationRecord(item.status)">View</h4>
             </div>
         </section>
 
@@ -44,7 +44,7 @@
                 <h5 id="count-section">Total count</h5>
                 <h4 id="bold-value">{{ item.count }}</h4>
                 <hr>
-                <h4 id="view" @click="viewRegistrationRecord(item.status)">View</h4>
+                <h4 id="view" @click="viewTransferRecord(item.status)">View</h4>
             </div>
         </section>
 
@@ -174,12 +174,12 @@ transferItems.value = [
     { heading: 'Confirmed Transfer', subheading: 'Approved transfer list', count: '', status: 'Approved' }
 ];
 
-const viewRecord = (item) => {
+const viewRegistrationRecord = (item) => {
     toast.success('Viewing details for: ' + item);
     router.push({ name: 'Registration', query: { selectedCard: item } });
 };
 
-const viewRegistrationRecord = (item) => {
+const viewTransferRecord = (item) => {
     toast.success('Viewing details for: ' + item);
     router.push({ name: 'Transfer', query: { selectedCard: item } });
 };
