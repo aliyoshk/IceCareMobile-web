@@ -88,7 +88,7 @@
                     </div>
                 </div>
 
-                <button class="btn-approve" @click="approve">Submit</button>
+                <button class="btn-approve" @click="approve">Approve</button>
 
             </section>
 
@@ -171,16 +171,11 @@ const handleApprove = async () => {
             confirmed: true
         };
 
-        console.log('This is the content of:', requestData);
-
         const response = await approveTransfer(requestData);
-
-        console.log('This is the response of:', response);
-
         if (response.success || response.data.success) {
             showApiDialog.value = true;
-            apiStatus.value = response.success;
-            responseMessage.value = response.message;
+            apiStatus.value = true;
+            responseMessage.value = response.data.data ?? response.data.message;
         }
     }
     catch (error) {
