@@ -199,6 +199,19 @@ export const approveTransfer = async (approveTransferRequest) => {
   }
 };
 
+export const approveThirdPartyTransfer = async (id) => {
+  try {
+    console.log('dashboardUseCase', id);
+    const response = await dashboardRepository.approveThirdPartyTransfer(id);
+    console.log('Response from API:', response);
+    return response;
+  } 
+  catch (error) {
+    console.log('Error in dashboardUseCase: approveTransfer', error);
+    throw new Error(error.message || 'An error occurred adding approveTransfer record');
+  }
+};
+
 export const addAdminUseCase = async (adminRequest) => {
   try {
     console.log('dashboardUseCase', adminRequest);

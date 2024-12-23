@@ -215,6 +215,18 @@ export const dashboardRepository = {
     }
   },
 
+  async approveThirdPartyTransfer(id) {
+    try {
+      console.log('dashboardRepository', id);
+      const response = await apiSource.approveThirdPartyTransfer(id)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.approveThirdPartyTransfer:', id, ":::::", error);
+      throw new Error(error.message || 'Failed to add data');
+    }
+  },
+
   async addAdmin(adminRequest) {
     try {
       console.log('dashboardRepository', adminRequest);

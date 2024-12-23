@@ -184,7 +184,7 @@ const handleApprove = async () => {
         }
     }
     catch (error) {
-        console.log('The fucking error is:', error);
+        console.log('The error response is:', error);
         showApiDialog.value = true;
         apiStatus.value = false;
         responseMessage.value = error.message;

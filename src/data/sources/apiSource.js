@@ -226,6 +226,18 @@ export const apiSource = {
     }
   },
 
+  async approveThirdPartyTransfer(id) {
+    try {
+      console.log('apiSource', id);
+      const response = await authService.approveThirdPartyTransfer(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource approveThirdPartyTransfer:', error);
+      handleApiError(error);
+    }
+  },
+
   async addAdmin(adminRequest) {
     try {
       console.log('apiSource', adminRequest);

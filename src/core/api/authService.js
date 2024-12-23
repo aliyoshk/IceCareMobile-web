@@ -218,6 +218,18 @@ export const authService = {
     }
   },
 
+  async approveThirdPartyTransfer(id) {
+    try {
+      console.log('approveThirdPartyTransfer approveTransfer:', id);
+      const response = await apiClient.post(API_ENDPOINTS.APPROVE_THIRD_PARTY_TRANSFER, id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService approveThirdPartyTransfer:', error);
+      throw error;
+    }
+  },
+
   async addAdmin(adminRequest) {
     try {
       console.log('Sending adminRequest:', adminRequest);
