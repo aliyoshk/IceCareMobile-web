@@ -146,6 +146,16 @@ export const attestRegistration = async (attestRegistrationRequest) => {
   }
 };
 
+export const deleteUserUseCase = async (id) => {
+  try {
+    return await dashboardRepository.deleteUser(id);
+  } 
+  catch (error) {
+    console.error('Error in dashboardUseCase: deleteUserUseCase', error.message);
+    throw new Error(error.message || 'An error occurred on delete user');
+  }
+};
+
 export const getApprovedUsers = async() => {
   try {
     return await dashboardRepository.getApprovedUsers();

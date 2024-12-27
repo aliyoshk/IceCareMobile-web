@@ -178,6 +178,17 @@ export const dashboardRepository = {
     }
   },
 
+  async deleteUser(id) {
+    try {
+      const response = await apiSource.deleteUser(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteUser:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteUser by id');
+    }
+  },
+
   async getPendingTransfer() {
     try {
       const response = await apiSource.getPendingTransfer();

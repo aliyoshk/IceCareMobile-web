@@ -162,6 +162,17 @@ export const authService = {
     }
   },
 
+  async deleteUser(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_USER(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteUser:', error);
+      throw error;
+    }
+  },
+
   async getApprovedUsers() {
     try {
       const response = await apiClient.get(API_ENDPOINTS.GET_APPROVE_CUSTOMERS);

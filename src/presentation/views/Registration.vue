@@ -47,13 +47,14 @@
               <td class="approve" @click="approve(item, 'Approve')">Approve</td>
               <td class="reject" @click="Reject(item, 'Reject')">Reject</td>
             </div>
+            <td class="delete" @click="deleteRecord(item)">Delete</td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <ConfirmDialog v-if="isDialogVisible" :title="dialogTitle" :message="dialogMessage" :show="isDialogVisible"
-      @confirm="handleApprove" @cancel="cancelDialog" />
+      @confirm="handleAction" @cancel="cancelDialog" />
 
     <Spinner :loading="loading" />
 
@@ -77,7 +78,7 @@ import Spinner from '../components/Spinner.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import CustomDialog from '../components/CustomDialog.vue';
 import { handleApiError } from '../../core/utils/errorHandler';
-import { getPendingRegistration, getApprovedUsers, getRejectedUsers, attestRegistration } from '@/domain/useCases/dashboardUseCase';
+import { getPendingRegistration, getApprovedUsers, getRejectedUsers, attestRegistration, deleteUserUseCase } from '@/domain/useCases/dashboardUseCase';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
@@ -94,7 +95,7 @@ const totalTransaction = ref(0);
 const response = ref([]);
 const isPending = ref(false);
 const isRejected = ref(false);
-const isAttested = ref(false);
+const isEndPointHit = ref(false);
 const responseMessage = ref('')
 const apiStatus = ref(false);
 const showApiDialog = ref(false);
@@ -111,9 +112,9 @@ const selectedCard = route.query.selectedCard;
 
 
 watchEffect(() => {
-  if (isAttested.value === true) {
+  if (isEndPointHit.value === true) {
     onMountedHandler()
-    isAttested.value === false;
+    isEndPointHit.value === false;
   }
 });
 
@@ -183,34 +184,58 @@ const approve = (item, state) => {
   isDialogVisible.value = true;
 };
 
-const handleApprove = async () => {
+const handleAction = async () => {
   console.log('Approved:', selectedItem.value);
   isDialogVisible.value = false;
-  try {
+  
+  if (status.value === 'Delete') {
+    try {
+      console.log('Deleting record of:', selectedItem.value);
+      const response = await deleteUserUseCase(selectedItem.value.id);
 
-    if (status.value === 'Reject') {
-      userId.value = 1;
+      if (response.success || response.data.success) {
+        isEndPointHit.value = true;
+        showApiDialog.value = true;
+        apiStatus.value = true;
+        responseMessage.value = response.message || "Record deleted Successful";
+      }
     }
-
-    const requestData = {
-        userId: selectedItem.value,
-        action: userId.value,
-      };
-
-    console.log('This is the content of:', requestData);
-
-    const response = await attestRegistration(requestData);
-
-    console.log('This is the response of:', response);
-
-    if (response.success || response.data.success) {
-      alert(response.message)
-      isAttested.value = true;
+    catch (error) {
+      console.log('Error occurred:', error.message);
+      alert(error.message);
+    }
+    finally {
+      loading.value = false;
+      isEmptyList.value = false;
     }
   }
-  catch (error) {
-    console.log('Error occurred:', error.message);
-    alert(error.message);
+  else {
+    try {
+
+      if (status.value === 'Reject') {
+        userId.value = 1;
+      }
+
+      const requestData = {
+          userId: selectedItem.value,
+          action: userId.value,
+        };
+
+      console.log('This is the content of:', requestData);
+
+      const response = await attestRegistration(requestData);
+
+      console.log('This is the response of:', response);
+
+      if (response.success || response.data.success) {
+        alert(response.message)
+        isEndPointHit.value = true;
+      }
+    }
+    catch (error) {
+      console.log('Error occurred:', error.message);
+      alert(error.message);
+    }
   }
 };
 
@@ -228,6 +253,16 @@ const cancelDialog = () => {
   isDialogVisible.value = false;
 };
 
+const deleteRecord = (item) => {
+  selectedItem.value = [];
+  console.log('Deleting record of:', item);
+  dialogTitle.value = `Delete ${item.fullName}`;
+  dialogMessage.value = `Proceeding will delete the record from the list`;
+  isDialogVisible.value = true;
+
+  selectedItem.value = item;
+  status.value = "Delete"
+};
 
 // Function to export table data to Excel
 class ExcelExporter {
@@ -483,6 +518,13 @@ th {
 
 .action {
   padding: 30px 20px;
+}
+
+.delete {
+  color: #A90836;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
 }
 
 .back-button {

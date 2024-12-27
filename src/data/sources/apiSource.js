@@ -166,6 +166,17 @@ export const apiSource = {
     }
   },
 
+  async deleteUser(id) {
+    try {
+      const response = await authService.deleteUser(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteUser:', error);
+      handleApiError(error);
+    }
+  },
+
   async getApprovedUsers() {
     try{
       const response = await authService.getApprovedUsers();

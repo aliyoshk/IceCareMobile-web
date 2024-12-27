@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
   GET_BANK_BY_NAME: (bankName) => `Bank/GetBanksRecordByName?bankName=${bankName}`,
   GET_PENDING_REGISTRATION: 'Admin/PendingRegistrations',
   REGISTRATION_ACTION: 'Admin/ChangeUserStatus',
+  DELETE_USER: (id) => `Admin/DeleteUser/${id}`,
   GET_APPROVE_CUSTOMERS: 'Admin/ApprovedUsers',
   GET_REJECTED_CUSTOMERS: 'Admin/RejectedUsers',
   GET_PENDING_TRANSFER: 'Admin/GetPendingTransfer',
