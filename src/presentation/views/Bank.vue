@@ -226,7 +226,7 @@ const handleFormSubmission = async (bankRequest) => {
       entityName: bankRequest.Name,
       bankName: onBankChanged.value,
       personType: 'Others',
-      expenseType: 'Debit',
+      expenseType: bankRequest.ExpenseType,
       amount: parseCurrencyValue(bankRequest.Amount),
     };
 

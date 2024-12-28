@@ -18,6 +18,18 @@
                   />
             </div>
 
+            <div class="form-item">
+              <label for="paymentCurrency">Payment Currency</label>
+              <div class="dropdown-container">
+                <select id="paymentCurrency" v-model="bank.ExpenseType">
+                  <option value="">Select Expense Type</option>
+                  <option value="Credit">Credit</option>
+                  <option value="Debit">Debit</option>
+                </select>
+                <span class="dropdown-icon">&#9662;</span>
+              </div>
+            </div>
+
             <div class="form-actions">
                 <button @click="submitForm" class="submit-btn">Submit</button>
                 <button @click="closeForm" class="close-btn">&#x2715;</button>
@@ -34,7 +46,8 @@ import { formatAmountToCurrency } from '@/core/utils/helpers';
 
 const bank = ref({
   Name: '',
-  Amount: ''
+  Amount: '',
+  ExpenseType: ''
 });
 
 const emit = defineEmits(['formSubmitted', 'formClosed']);

@@ -171,7 +171,7 @@ const filteredResponse = computed(() => {
 });
 
 const goBack = () => {
-      router.push({ name: 'BackOffice' });
+  router.push({ name: 'BackOffice' });
 };
 
 const approve = (item, state) => {
@@ -207,11 +207,11 @@ const handleAction = async () => {
     finally {
       loading.value = false;
       isEmptyList.value = false;
+      status.value = '';
     }
   }
   else {
     try {
-
       if (status.value === 'Reject') {
         userId.value = 1;
       }
@@ -222,9 +222,7 @@ const handleAction = async () => {
         };
 
       console.log('This is the content of:', requestData);
-
       const response = await attestRegistration(requestData);
-
       console.log('This is the response of:', response);
 
       if (response.success || response.data.success) {
@@ -235,6 +233,11 @@ const handleAction = async () => {
     catch (error) {
       console.log('Error occurred:', error.message);
       alert(error.message);
+    }
+    finally {
+      loading.value = false;
+      isEmptyList.value = false;
+      status.value = '';
     }
   }
 };
