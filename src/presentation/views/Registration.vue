@@ -161,6 +161,9 @@ const onMountedHandler = async () => {
 
 const done = () => {
   showApiDialog.value = false;
+  if (responseMessage.value.includes('No record found')) {
+    goBack();
+  }
 };
 
 const filteredResponse = computed(() => {
@@ -211,6 +214,7 @@ const handleAction = async () => {
     }
   }
   else {
+    console.log("The selected status" + status.value);
     try {
       if (status.value === 'Reject') {
         userId.value = 1;
@@ -226,7 +230,7 @@ const handleAction = async () => {
       console.log('This is the response of:', response);
 
       if (response.success || response.data.success) {
-        alert(response.message)
+        alert(response.data.data)
         isEndPointHit.value = true;
       }
     }
