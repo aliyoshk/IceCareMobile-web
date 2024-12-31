@@ -15,7 +15,7 @@
 
                 <div class="form-item-wrapper">
                     <label for="password">Password</label>
-                    <input type="number" id="password" v-model="adminDetails.Password" placeholder="Enter balance" />
+                    <input type="text" id="password" v-model="adminDetails.Password" placeholder="Enter balance" />
                 </div>
             </div>
 
