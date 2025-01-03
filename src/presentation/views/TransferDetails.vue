@@ -5,7 +5,7 @@
             <div class="header">
                 <!-- <button class="back-button" @click="goBack">← Back</button> -->
                 <button @click="goBack" class="back-button">← Back</button>
-                <h1 class="title">Customer Transfer Details</h1>
+                <h1 class="title">Customer {{ selectedCustomer.category }} Details</h1>
             </div>
         </section>
 
@@ -117,7 +117,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { formatCurrency, formatDate, formatEmail } from '@/core/utils/helpers';
 import Spinner from '../components/Spinner.vue';
-import { approveTransfer } from '@/domain/useCases/dashboardUseCase';
+import { approveTransfer, approveAccountPaymentUseCase, approveThirdPartyUseCase, approveAccountTopUpUseCase } from '@/domain/useCases/dashboardUseCase';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import CustomDialog from '../components/CustomDialog.vue';
 
@@ -171,11 +171,37 @@ const handleApprove = async () => {
             confirmed: true
         };
 
-        const response = await approveTransfer(requestData);
-        if (response.success || response.data.success) {
-            showApiDialog.value = true;
-            apiStatus.value = true;
-            responseMessage.value = response.data.data ?? response.data.message;
+        if (selectedCustomer.category.includes('SingleBankPayment') || selectedCustomer.category.includes('MultipleBankPayment')) {
+            const response = await approveTransfer(requestData);
+            if (response.success || response.data.success) {
+                showApiDialog.value = true;
+                apiStatus.value = true;
+                responseMessage.value = response.data.data ?? response.data.message;
+            }
+        }
+        else if (selectedCustomer.category === 'AccountBalancePayment') {
+            const response = await approveAccountPaymentUseCase(selectedCustomer.id);
+            if (response.success || response.data.success) {
+                showApiDialog.value = true;
+                apiStatus.value = true;
+                responseMessage.value = response.data.data ?? response.data.message;
+            }
+        }
+        else if (selectedCustomer.category === 'ThirdPartyPayment') {
+            const response = await approveThirdPartyUseCase(selectedCustomer.id);
+            if (response.success || response.data.success) {
+                showApiDialog.value = true;
+                apiStatus.value = true;
+                responseMessage.value = response.data.data ?? response.data.message;
+            }
+        }
+        else if (selectedCustomer.category === 'AccountTopUp') {
+            const response = await approveAccountTopUpUseCase(requestData);
+            if (response.success || response.data.success) {
+                showApiDialog.value = true;
+                apiStatus.value = true;
+                responseMessage.value = response.data.data ?? response.data.message;
+            }
         }
     }
     catch (error) {
@@ -191,14 +217,18 @@ const handleApprove = async () => {
 
 const fetchData = () => {
 
-    selectedCustomer.transferEvidence.forEach((evidence) => {
-        receipts.value.push(evidence);
-    });
+    if (selectedCustomer?.transferEvidence?.length > 0) {
+        selectedCustomer.transferEvidence.forEach((evidence) => {
+            receipts.value.push(evidence);
+        });
+    }
 
-    selectedCustomer.bankDetails.forEach((bankDetail) => {
-        totalAmount.value += bankDetail.amountTransferred;
-        banks.value.push(bankDetail);
-    });
+    if (selectedCustomer?.bankDetails?.length > 0) {
+        selectedCustomer.bankDetails.forEach((bankDetail) => {
+            totalAmount.value += bankDetail.amountTransferred || 0;
+            banks.value.push(bankDetail);
+        });
+    }
 
     console.log('Receipts', receipts.value)
     console.log('Banks', banks.value)
@@ -215,7 +245,7 @@ const openModal = (receipt) => {
 };
 
 const closeModal = () => {
-  showModal.value = false;
+    showModal.value = false;
 };
 
 onMounted(() => {

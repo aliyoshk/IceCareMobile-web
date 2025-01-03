@@ -60,6 +60,17 @@ export const apiSource = {
     }
   },
 
+  async deleteSupplier(id) {
+    try {
+      const response = await authService.deleteSupplier(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteSupplier:', error);
+      handleApiError(error);
+    }
+  },
+
   async getCustomers(){
     try{
       const response = await authService.getCustomers();
@@ -83,6 +94,29 @@ export const apiSource = {
     }
   },
 
+  async deleteCustomer(id) {
+    try {
+      const response = await authService.deleteCustomer(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteCustomer:', error);
+      handleApiError(error);
+    }
+  },
+
+  async completeCustomerPayment(customerPaymentRequest) {
+    try {
+      console.log('apiSource', customerPaymentRequest);
+      const response = await authService.completeCustomerPayment(customerPaymentRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource completeCustomerPayment:', error);
+      handleApiError(error);
+    }
+  },
+
   async getBanks(){
     try{
       const response = await authService.getBanks();
@@ -102,6 +136,17 @@ export const apiSource = {
     } 
     catch (error) {
       console.error('Error in apiSource addBank:', error);
+      handleApiError(error);
+    }
+  },
+
+  async deleteBank(id) {
+    try {
+      const response = await authService.deleteBank(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteBank:', error);
       handleApiError(error);
     }
   },
@@ -130,6 +175,17 @@ export const apiSource = {
     }
   },
 
+  async deletePayment(id) {
+    try {
+      const response = await authService.deletePayment(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deletePayment:', error);
+      handleApiError(error);
+    }
+  },
+
   async getBankByName(bankName) {
     try {
       const response = await authService.getBankByName(bankName);
@@ -140,7 +196,6 @@ export const apiSource = {
       handleApiError(error);
     }
   },
-
 
   async getPendingRegistration() {
     try{
@@ -237,6 +292,64 @@ export const apiSource = {
     }
   },
 
+  async deleteTransferRecord(id) {
+    try {
+      const response = await authService.deleteTransferRecord(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteTransferRecord:', error);
+      handleApiError(error);
+    }
+  },
+
+  async getAccountPayments(status) {
+    try{
+      const response = await authService.getAccountPayments(status);
+      console.log('apiSource: getAccountPayments', response);
+      return response.data;
+    }
+    catch (error) {
+      console.error('Error in apiSource getAccountPayments:', error);
+      handleApiError(error);
+    }
+  },
+
+  async approveAccountPayment(id) {
+    try {
+      console.log('apiSource', id);
+      const response = await authService.approveAccountPayment(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource approveAccountPayment:', error);
+      handleApiError(error);
+    }
+  },
+
+  async deleteAccountPaymentRecord(id) {
+    try {
+      const response = await authService.deleteAccountPaymentRecord(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteAccountPaymentRecord:', error);
+      handleApiError(error);
+    }
+  },
+
+  async getThirdPartyTransfer(status) {
+    try{
+      const response = await authService.getThirdPartyTransfers(status);
+      console.log('apiSource: getThirdPartyTransfer', response);
+      return response.data;
+    }
+    catch (error) {
+      console.error('Error in apiSource getThirdPartyTransfer:', error);
+      handleApiError(error);
+    }
+  },
+
   async approveThirdPartyTransfer(id) {
     try {
       console.log('apiSource', id);
@@ -245,6 +358,52 @@ export const apiSource = {
     } 
     catch (error) {
       console.error('Error in apiSource approveThirdPartyTransfer:', error);
+      handleApiError(error);
+    }
+  },
+
+  async deleteThirdPartyRecord(id) {
+    try {
+      const response = await authService.deleteThirdPartyRecord(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteThirdPartyRecord:', error);
+      handleApiError(error);
+    }
+  },
+
+  async getAccountTopUps(status) {
+    try{
+      const response = await authService.getAccountTopUps(status);
+      console.log('apiSource: getAccountTopUps', response);
+      return response.data;
+    }
+    catch (error) {
+      console.error('Error in apiSource getAccountTopUps:', error);
+      handleApiError(error);
+    }
+  },
+
+  async approveAccountTopUp(request) {
+    try {
+      console.log('apiSource', id);
+      const response = await authService.approveAccountTopUp(request);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in apiSource approveAccountTopUp:', error);
+      handleApiError(error);
+    }
+  },
+
+  async deleteAccountTopUpRecord(id) {
+    try {
+      const response = await authService.deleteAccountTopUpRecord(id);
+      return response.data;
+    } 
+    catch (error) {
+      console.error('Error in apiSource deleteAccountTopUpRecord:', error);
       handleApiError(error);
     }
   },
@@ -283,50 +442,6 @@ export const apiSource = {
     }
   },
 
-  async deleteSupplier(id) {
-    try {
-      const response = await authService.deleteSupplier(id);
-      return response.data;
-    } 
-    catch (error) {
-      console.error('Error in apiSource deleteSupplier:', error);
-      handleApiError(error);
-    }
-  },
-
-  async deleteCustomer(id) {
-    try {
-      const response = await authService.deleteCustomer(id);
-      return response.data;
-    } 
-    catch (error) {
-      console.error('Error in apiSource deleteCustomer:', error);
-      handleApiError(error);
-    }
-  },
-
-  async deletePayment(id) {
-    try {
-      const response = await authService.deletePayment(id);
-      return response.data;
-    } 
-    catch (error) {
-      console.error('Error in apiSource deletePayment:', error);
-      handleApiError(error);
-    }
-  },
-
-  async deleteBank(id) {
-    try {
-      const response = await authService.deleteBank(id);
-      return response.data;
-    } 
-    catch (error) {
-      console.error('Error in apiSource deleteBank:', error);
-      handleApiError(error);
-    }
-  },
-
   async addCompanyAccount(accountRequest) {
     try {
       console.log('apiSource', accountRequest);
@@ -347,18 +462,6 @@ export const apiSource = {
     } 
     catch (error) {
       console.error('Error in apiSource addCompanyPhoneNumber:', error);
-      handleApiError(error);
-    }
-  },
-
-  async completeCustomerPayment(customerPaymentRequest) {
-    try {
-      console.log('apiSource', customerPaymentRequest);
-      const response = await authService.completeCustomerPayment(customerPaymentRequest);
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in apiSource completeCustomerPayment:', error);
       handleApiError(error);
     }
   },

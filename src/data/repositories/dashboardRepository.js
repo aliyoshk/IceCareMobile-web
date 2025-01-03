@@ -14,7 +14,6 @@ export const dashboardRepository = {
     }
   },
 
-
   async updateDollarRate(newDollarRate) {
     try {
       const response = await apiSource.updateDollarRate(newDollarRate)
@@ -49,6 +48,17 @@ export const dashboardRepository = {
     }
   },
 
+  async deleteSupplier(id) {
+    try {
+      const response = await apiSource.deleteSupplier(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteSupplier:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteSupplier by id');
+    }
+  },
+
   async getCustomers() {
     try {
       const response = await apiSource.getCustomers();
@@ -69,6 +79,29 @@ export const dashboardRepository = {
     catch (error) {
       console.error('Error in dashboardRepository.addCustomer:', customerRequest, ":::::", error);
       throw new Error(error.message || 'Failed to add data');
+    }
+  },
+
+  async deleteCustomer(id) {
+    try {
+      const response = await apiSource.deleteCustomer(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteCustomer:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteCustomer by id');
+    }
+  },
+
+  async completeCustomerPayment(customerPaymentRequest) {
+    try {
+      console.log('dashboardRepository', customerPaymentRequest);
+      const response = await apiSource.completeCustomerPayment(customerPaymentRequest)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.completeCustomerPayment:', customerPaymentRequest, ":::::", error);
+      throw new Error(error.message || 'Failed to add customer payment');
     }
   },
 
@@ -119,6 +152,17 @@ export const dashboardRepository = {
     }
   },
 
+  async deletePayment(id) {
+    try {
+      const response = await apiSource.deletePayment(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deletePayment:', error.message);
+      throw new Error(error.message || 'Failed to delete deletePayment by id');
+    }
+  },
+
   async getBankByName(bankName) {
     try {
       const response = await apiSource.getBankByName(bankName);
@@ -127,6 +171,17 @@ export const dashboardRepository = {
     catch (error) {
       console.error('Error in dashboardRepository getBankByName:', error.message);
       throw new Error(error.message || 'Failed to fetch bank by name');
+    }
+  },
+
+  async deleteBank(id) {
+    try {
+      const response = await apiSource.deleteBank(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteBank:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteBank by id');
     }
   },
 
@@ -201,7 +256,6 @@ export const dashboardRepository = {
     }
   },
 
-
   async getApprovedTransfer() {
     try {
       const response = await apiSource.getApprovedTransfer();
@@ -226,6 +280,64 @@ export const dashboardRepository = {
     }
   },
 
+  async deleteTransferRecord(id) {
+    try {
+      const response = await apiSource.deleteTransferRecord(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteTransferRecord:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteTransferRecord by id');
+    }
+  },
+
+  async getAccountPayments(status) {
+    try {
+      const response = await apiSource.getAccountPayments(status);
+      console.log('dashboardRepository: getAcoountPayments', response);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.getAcoountPayments:', error);
+      throw new Error(error.message || 'Failed to fetch data');
+    }
+  },
+
+  async approveAccountPayment(id) {
+    try {
+      console.log('dashboardRepository', id);
+      const response = await apiSource.approveAccountPayment(id)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.approveAccountPayment:', id, ":::::", error);
+      throw new Error(error.message || 'Failed to approve record');
+    }
+  },
+
+  async deleteAccountPaymentRecord(id) {
+    try {
+      const response = await apiSource.deleteAccountPaymentRecord(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteAccountPaymentRecord:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteAccountPaymentRecord by id');
+    }
+  },
+
+  async getThirdPartyTransfer(status) {
+    try {
+      const response = await apiSource.getThirdPartyTransfer(status);
+      console.log('dashboardRepository: getThirdPartyTransfer', response);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.getThirdPartyTransfer:', error);
+      throw new Error(error.message || 'Failed to fetch data');
+    }
+  },
+
   async approveThirdPartyTransfer(id) {
     try {
       console.log('dashboardRepository', id);
@@ -235,6 +347,52 @@ export const dashboardRepository = {
     catch (error) {
       console.error('Error in dashboardRepository.approveThirdPartyTransfer:', id, ":::::", error);
       throw new Error(error.message || 'Failed to add data');
+    }
+  },
+
+  async deleteThirdPartyRecord(id) {
+    try {
+      const response = await apiSource.deleteThirdPartyRecord(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteThirdPartyRecord:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteThirdPartyRecord by id');
+    }
+  },
+
+  async getAccountTopUps(status) {
+    try {
+      const response = await apiSource.getAccountTopUps(status);
+      console.log('dashboardRepository: getAccountTopUps', response);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.getAccountTopUps:', error);
+      throw new Error(error.message || 'Failed to fetch data');
+    }
+  },
+
+  async approveAccountTopUp(request) {
+    try {
+      console.log('dashboardRepository', request);
+      const response = await apiSource.approveAccountTopUp(id)
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository.approveAccountTopUp:', request, ":::::", error);
+      throw new Error(error.message || 'Failed to add data');
+    }
+  },
+
+  async deleteAccountTopUpRecord(id) {
+    try {
+      const response = await apiSource.deleteAccountTopUpRecord(id);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in dashboardRepository deleteAccountTopUpRecord:', error.message);
+      throw new Error(error.message || 'Failed to delete deleteAccountTopUpRecord by id');
     }
   },
 
@@ -272,50 +430,6 @@ export const dashboardRepository = {
     }
   },
 
-  async deleteSupplier(id) {
-    try {
-      const response = await apiSource.deleteSupplier(id);
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in dashboardRepository deleteSupplier:', error.message);
-      throw new Error(error.message || 'Failed to delete deleteSupplier by id');
-    }
-  },
-
-  async deleteCustomer(id) {
-    try {
-      const response = await apiSource.deleteCustomer(id);
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in dashboardRepository deleteCustomer:', error.message);
-      throw new Error(error.message || 'Failed to delete deleteCustomer by id');
-    }
-  },
-
-  async deletePayment(id) {
-    try {
-      const response = await apiSource.deletePayment(id);
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in dashboardRepository deletePayment:', error.message);
-      throw new Error(error.message || 'Failed to delete deletePayment by id');
-    }
-  },
-
-  async deleteBank(id) {
-    try {
-      const response = await apiSource.deleteBank(id);
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in dashboardRepository deleteBank:', error.message);
-      throw new Error(error.message || 'Failed to delete deleteBank by id');
-    }
-  },
-
   async addCompanyAccount(accountRequest) {
     try {
       console.log('dashboardRepository', accountRequest);
@@ -340,18 +454,6 @@ export const dashboardRepository = {
     }
   },
 
-  async completeCustomerPayment(customerPaymentRequest) {
-    try {
-      console.log('dashboardRepository', customerPaymentRequest);
-      const response = await apiSource.completeCustomerPayment(customerPaymentRequest)
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in dashboardRepository.completeCustomerPayment:', customerPaymentRequest, ":::::", error);
-      throw new Error(error.message || 'Failed to add customer payment');
-    }
-  },
-
   async deleteCompanyAccount(id) {
     try {
       const response = await apiSource.deleteCompanyAccount(id);
@@ -363,5 +465,5 @@ export const dashboardRepository = {
     }
   },
 
-};
 
+};

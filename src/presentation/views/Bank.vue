@@ -153,9 +153,7 @@ onMounted(async () => {
     banks.value = dashboardData.companyAccounts.map(account => ({
       name: account.bankName
     }));
-  };
-
-  
+  };  
 });
 
 const onMountedHandler = async () => {

@@ -20,13 +20,27 @@
                         <p>{{ formatCurrency(totalAmount) }}</p>
                     </div>
                 </div>
-            </div>
 
+                <div class="card small-card">
+                    <img src="@/assets/ic_account.svg" alt="Card Image" class="card-image" />
+                    <div class="content">
+                        <h3>Option</h3>
+                        <div class="dropdown-container">
+                            <select id="banks" v-model="onOptionChanged">
+                                <option value=""> Select Category </option>
+                                <option v-for="(item, index) in options" :key="index" v-value="item.name"> {{ item.name
+                                    }} </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </section>
 
-        <div class="table-container">
+        <div class="table-container" v-if="onOptionChanged && selectedOption !== 'Select Category'">
             <div class="table-header">
-                <h2>{{ selectedCard }} Requests</h2>
+                <h2>{{ selectedCard }} {{ onOptionChanged }} Requests</h2>
                 <div class="search-add-container">
                     <input type="text" v-model="searchQuery" placeholder="Search..." />
                     <button @click="exportToPDF">Export to PDF</button>
@@ -42,6 +56,7 @@
                         <th>Name</th>
                         <th>Amount</th>
                         <th>Status</th>
+                        <th>Category</th>
                     </tr>
                 </thead>
 
@@ -53,7 +68,9 @@
                         <td>{{ item.customerName || '-' }}</td>
                         <td>{{ formatCurrency(calculateTotalAmount(item.bankDetails)) }}</td>
                         <td>{{ item.status }}</td>
+                        <td> {{ item.category }}</td>
                         <td class="view" @click="view(item)">View</td>
+                        <td class="Delete" @click="deleteItem(item)">Delete</td>
                     </tr>
                 </tbody>
             </table>
@@ -62,8 +79,7 @@
         <Spinner :loading="loading" />
 
         <CustomDialog v-if="showApiDialog" :message="responseMessage" :show="showApiDialog" @confirm="done"
-        :success="apiStatus" :emptyList="isEmptyList" 
-        />
+            :success="apiStatus" :emptyList="isEmptyList" />
 
     </div>
 </template>
@@ -73,7 +89,7 @@
 <script setup>
 
 import { useRouter, useRoute } from 'vue-router';
-import { ref, computed, onMounted, watchEffect } from 'vue';
+import { ref, computed, onMounted, watchEffect, nextTick } from 'vue';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
@@ -81,6 +97,9 @@ import ConfirmDialog from '../components/ConfirmDialog.vue';
 import CustomDialog from '../components/CustomDialog.vue';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
 import { getPendingTransfer, getApprovedTransfer, approveTransfer } from '@/domain/useCases/dashboardUseCase';
+import { getAccountPaymentUseCase, deleteAccountPaymentUseCase } from '@/domain/useCases/dashboardUseCase';
+import { getThirdPartyUseCase, deleteThirdPartyUseCase } from '@/domain/useCases/dashboardUseCase';
+import { getAccountTopUpUseCase, deleteAccountTopUpUseCase } from '@/domain/useCases/dashboardUseCase';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
@@ -98,21 +117,75 @@ const responseMessage = ref('')
 const apiStatus = ref(false);
 const showApiDialog = ref(false);
 const isEmptyList = ref(false);
+const onOptionChanged = ref('');
+const options = ref([]);
+const selectedOption = ref([]);
+const isEndPointHit = ref(false);
 
 const selectedCard = route.query.selectedCard;
 
+options.value = [{ name: 'Transfer' }, { name: 'Account Payment' }, { name: 'Third party' }, { name: 'Account Top Up' }];
+
+watchEffect(() => {
+    if (isEndPointHit.value === true || onOptionChanged.value !== '') {
+        nextTick(() => {
+            onMountedHandler();
+            isEndPointHit.value = false;
+        });
+    }
+});
+
 onMounted(async () => {
+    onMountedHandler();
+});
+
+const onMountedHandler = async () => {
     loading.value = true;
 
     try {
         if (selectedCard === 'Pending') {
-            const pendingResponse = await getPendingTransfer();
-            response.value = pendingResponse.data || [];
+
+            if (onOptionChanged.value === 'Transfer') {
+                const pendingResponse = await getPendingTransfer();
+                response.value = pendingResponse.data || [];
+            }
+            else if (onOptionChanged.value === 'Account Payment') {
+                const pendingResponse = await getAccountPaymentUseCase("Pending");
+                console.log('Account Payment Response:', pendingResponse);
+                response.value = pendingResponse.data || [];
+            }
+            else if (onOptionChanged.value === 'Third party') {
+                const pendingResponse = await getThirdPartyUseCase("Pending");
+                console.log('Third party Response:', pendingResponse);
+                response.value = pendingResponse.data || [];
+            }
+            else if (onOptionChanged.value === 'Account Top Up') {
+                const pendingResponse = await getAccountTopUpUseCase("Pending");
+                console.log('Account Top Up Response:', pendingResponse);
+                response.value = pendingResponse.data || [];
+            }
+
         } else {
-            const pendingResponse = await getApprovedTransfer();
-            response.value = pendingResponse.data || [];
+            if (onOptionChanged.value === 'Transfer') {
+                const pendingResponse = await getApprovedTransfer();
+                response.value = pendingResponse.data || [];
+            }
+            else if (onOptionChanged.value === 'Account Payment') {
+                const pendingResponse = await getAccountPaymentUseCase("Confirmed");
+                console.log('Account Payment Response:', pendingResponse);
+                response.value = pendingResponse.data || [];
+            }
+            else if (onOptionChanged.value === 'Third party') {
+                const pendingResponse = await getThirdPartyUseCase("Confirmed");
+                console.log('Third party Response:', pendingResponse);
+                response.value = pendingResponse.data || [];
+            }
+            else if (onOptionChanged.value === 'Account Top Up') {
+                const pendingResponse = await getAccountTopUpUseCase("Confirmed");
+                console.log('Account Top Up Response:', pendingResponse);
+                response.value = pendingResponse.data || [];
+            }
         }
-        console.log(selectedCard + ' registration record:', response);
 
         response.value.forEach((item) => {
             if (item.bankDetails && item.bankDetails.length) {
@@ -120,32 +193,31 @@ onMounted(async () => {
                     totalAmount.value += bankDetail.amountTransferred;
                 });
             }
+            else {
+                totalAmount.value = item.totalAmount;
+            }
         });
-
-        console.log("All total bank transferred Records" + totalAmount.value);
-
         totalRecord.value = response.value.length;
-        console.log("Total record lenght" + totalRecord.value);
     }
     catch (error) {
-      showApiDialog.value = true;
-      apiStatus.value = false;
-      responseMessage.value = error.message;
-      isEmptyList.value = error.message.includes('No record found');
-    } 
-    finally {
-      loading.value = false;
-      isEmptyList.value = false;
+        showApiDialog.value = true;
+        apiStatus.value = false;
+        responseMessage.value = error.message;
+        isEmptyList.value = error.message.includes('No record found');
     }
-});
+    finally {
+        loading.value = false;
+        isEmptyList.value = false;
+    }
+};
 
 const done = () => {
-  showApiDialog.value = false;
+    showApiDialog.value = false;
 };
 
 const calculateTotalAmount = (bankDetails) => {
     if (!bankDetails || bankDetails.length === 0) {
-        return 0;
+        return totalAmount.value;
     }
     return bankDetails.reduce((total, bankDetail) => total + (bankDetail.amountTransferred || 0), 0);
 };
@@ -163,14 +235,13 @@ const goBack = () => {
 
 const view = (item) => {
     toast.success('Selected is:' + item.customerName);
-    
+
     sessionStorage.setItem('selectedCustomer', JSON.stringify(item));
     router.push({ name: 'TransferDetails' });
-    
-    // router.push({
-    //     name: 'TransferDetails',
-    //     query: { selectedCustomer: JSON.stringify(item) },
-    // });
+};
+
+const deleteItem = (item) => {
+    toast.success('Selected is:' + item.customerName);
 };
 
 
@@ -415,6 +486,14 @@ th {
     padding: 5px 10px;
     cursor: pointer;
     text-decoration: underline;
+    color: #0b8406;
+}
+
+.Delete {
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    text-decoration: underline;
     color: #A90836;
 }
 
@@ -427,7 +506,7 @@ th {
     padding-right: 20px;
 }
 
-.card-header{
+.card-header {
     display: flex;
     gap: 15px;
 }

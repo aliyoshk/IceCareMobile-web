@@ -58,6 +58,17 @@ export const authService = {
       throw error;
     }
   },
+
+  async deleteSupplier(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_SUPPLIER(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteSupplier:', error);
+      throw error;
+    }
+  },
   
   async getCustomers() {
     try {
@@ -78,6 +89,29 @@ export const authService = {
     } 
     catch (error) {
       console.error('Error in authService addCustomer:', error);
+      throw error;
+    }
+  },
+
+  async deleteCustomer(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_CUSTOMER(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteCustomer:', error);
+      throw error;
+    }
+  },
+
+  async completeCustomerPayment(customerPaymentRequest) {
+    try {
+      console.log('Sending customerPaymentRequest:', customerPaymentRequest);
+      const response = await apiClient.post(API_ENDPOINTS.COMPLETE_CUSTOMER_PAYMENT, customerPaymentRequest);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService completeCustomerPayment:', error);
       throw error;
     }
   },
@@ -105,6 +139,17 @@ export const authService = {
     }
   },
 
+  async deleteBank(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_BANK(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteBank:', error);
+      throw error;
+    }
+  },
+
   async getPayments() {
     try {
       const response = await apiClient.get(API_ENDPOINTS.GET_PAYMENTS);
@@ -124,6 +169,17 @@ export const authService = {
     } 
     catch (error) {
       console.error('Error in authService addPayment:', error);
+      throw error;
+    }
+  },
+
+  async deletePayment(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_PAYMENT(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deletePayment:', error);
       throw error;
     }
   },
@@ -229,6 +285,62 @@ export const authService = {
     }
   },
 
+  async deleteTransferRecord(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_TRANSFER_RECORD(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteTransferRecord:', error);
+      throw error;
+    }
+  },
+
+  async getAccountPayments(status) {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_ACCOUNT_PAYMENTS(status));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getAccountPayments:', error);
+      throw error;
+    }
+  },
+
+  async approveAccountPayment(id) {
+    try {
+      console.log('Sending approveAccountPayment:', id);
+      const response = await apiClient.post(API_ENDPOINTS.APPROVE_ACCOUNT_PAYMENT(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService approveTransfer:', error);
+      throw error;
+    }
+  },
+
+  async deleteAccountPaymentRecord(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_ACCOUNT_PAYMENT_RECORD(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteAccountPaymentRecord:', error);
+      throw error;
+    }
+  },
+
+  async getThirdPartyTransfers(status) {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_THIRD_PARTY_TRANSFER(status));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getThirdPartyTransfers:', error);
+      throw error;
+    }
+  },
+
   async approveThirdPartyTransfer(id) {
     try {
       console.log('approveThirdPartyTransfer approveTransfer:', id);
@@ -237,6 +349,51 @@ export const authService = {
     } 
     catch (error) {
       console.error('Error in authService approveThirdPartyTransfer:', error);
+      throw error;
+    }
+  },
+
+  async deleteThirdPartyRecord(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_THIRD_PARTY_RECORD(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteThirdPartyRecord:', error);
+      throw error;
+    }
+  },
+
+  async getAccountTopUps(status) {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_ACCOUNT_TOPUPS(status));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService getAccountTopUps:', error);
+      throw error;
+    }
+  },
+
+  async approveAccountTopUp(request) {
+    try {
+      console.log('Sending approveAccountTopUp:', request);
+      const response = await apiClient.post(API_ENDPOINTS.APPROVE_ACCOUNT_TOPUP, request);
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService approveAccountTopUp:', error);
+      throw error;
+    }
+  },
+
+  async deleteAccountTopUpRecord(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_ACCOUNT_TOPUP_RECORD(id));
+      return response;
+    } 
+    catch (error) {
+      console.error('Error in authService deleteAccountTopUpRecord:', error);
       throw error;
     }
   },
@@ -275,51 +432,6 @@ export const authService = {
     }
   },
 
-  async deleteSupplier(id) {
-    try {
-      const response = await apiClient.delete(API_ENDPOINTS.DELETE_SUPPLIER(id));
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in authService deleteSupplier:', error);
-      throw error;
-    }
-  },
-
-  async deleteCustomer(id) {
-    try {
-      const response = await apiClient.delete(API_ENDPOINTS.DELETE_CUSTOMER(id));
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in authService deleteCustomer:', error);
-      throw error;
-    }
-  },
-
-
-  async deletePayment(id) {
-    try {
-      const response = await apiClient.delete(API_ENDPOINTS.DELETE_PAYMENT(id));
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in authService deletePayment:', error);
-      throw error;
-    }
-  },
-
-  async deleteBank(id) {
-    try {
-      const response = await apiClient.delete(API_ENDPOINTS.DELETE_BANK(id));
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in authService deleteBank:', error);
-      throw error;
-    }
-  },
-
   async addCompanyAccount(accountRequest) {
     try {
       console.log('Sending addCompanyAccount:', accountRequest);
@@ -344,18 +456,6 @@ export const authService = {
     }
   },
 
-  async completeCustomerPayment(customerPaymentRequest) {
-    try {
-      console.log('Sending customerPaymentRequest:', customerPaymentRequest);
-      const response = await apiClient.post(API_ENDPOINTS.COMPLETE_CUSTOMER_PAYMENT, customerPaymentRequest);
-      return response;
-    } 
-    catch (error) {
-      console.error('Error in authService completeCustomerPayment:', error);
-      throw error;
-    }
-  },
-
   async deleteCompanyAccount(id) {
     try {
       const response = await apiClient.delete(API_ENDPOINTS.DELETE_COMPANY_ACCOUNT(id));
@@ -366,5 +466,6 @@ export const authService = {
       throw error;
     }
   },
+
 
 };
