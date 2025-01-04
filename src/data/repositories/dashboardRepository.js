@@ -376,7 +376,7 @@ export const dashboardRepository = {
   async approveAccountTopUp(request) {
     try {
       console.log('dashboardRepository', request);
-      const response = await apiSource.approveAccountTopUp(id)
+      const response = await apiSource.approveAccountTopUp(request)
       return response;
     } 
     catch (error) {
