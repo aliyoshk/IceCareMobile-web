@@ -171,6 +171,7 @@ const handleApprove = async () => {
             confirmed: true
         };
 
+        console.log('The selected catrgory:', selectedCustomer.category);
         if (selectedCustomer.category.includes('SingleBankPayment') || selectedCustomer.category.includes('MultipleBankPayment')) {
             const response = await approveTransfer(requestData);
             if (response.success || response.data.success) {
@@ -195,7 +196,7 @@ const handleApprove = async () => {
                 responseMessage.value = response.data.data ?? response.data.message;
             }
         }
-        else if (selectedCustomer.category === 'AccountTopUp') {
+        else if (selectedCustomer.category.includes('AccountTopUp')) {
             const response = await approveAccountTopUpUseCase(requestData);
             if (response.success || response.data.success) {
                 showApiDialog.value = true;

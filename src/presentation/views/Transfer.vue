@@ -96,7 +96,7 @@ import Spinner from '../components/Spinner.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import CustomDialog from '../components/CustomDialog.vue';
 import { formatCurrency, formatDate } from '@/core/utils/helpers';
-import { getPendingTransfer, getApprovedTransfer, approveTransfer } from '@/domain/useCases/dashboardUseCase';
+import { getPendingTransfer, getApprovedTransfer, deleteTransferUseCase } from '@/domain/useCases/dashboardUseCase';
 import { getAccountPaymentUseCase, deleteAccountPaymentUseCase } from '@/domain/useCases/dashboardUseCase';
 import { getThirdPartyUseCase, deleteThirdPartyUseCase } from '@/domain/useCases/dashboardUseCase';
 import { getAccountTopUpUseCase, deleteAccountTopUpUseCase } from '@/domain/useCases/dashboardUseCase';
@@ -242,6 +242,42 @@ const view = (item) => {
 
 const deleteItem = (item) => {
     toast.success('Selected is:' + item.customerName);
+    deleteRecord(item);
+};
+
+const deleteRecord = async (item) => {
+    try {
+        if (onOptionChanged.value === 'Transfer') {
+            const pendingResponse = await deleteTransferUseCase(item.id);
+            console.log('Delete Transfer Response:', pendingResponse);
+            response.value = pendingResponse.data || [];
+        }
+        else if (onOptionChanged.value === 'Account Payment') {
+            const pendingResponse = await deleteAccountPaymentUseCase(item.id);
+            console.log('Delete Account Payment Response:', pendingResponse);
+            response.value = pendingResponse.data || [];
+        }
+        else if (onOptionChanged.value === 'Third party') {
+            const pendingResponse = await deleteThirdPartyUseCase(item.id);
+            console.log('Delete Third party Response:', pendingResponse);
+            response.value = pendingResponse.data || [];
+        }
+        else if (onOptionChanged.value === 'Account Top Up') {
+            const pendingResponse = await deleteAccountTopUpUseCase(item.id);
+            console.log('Delete Account Top Up Response:', pendingResponse);
+            response.value = pendingResponse.data || [];
+        }
+    }
+    catch (error) {
+        showApiDialog.value = true;
+        apiStatus.value = false;
+        responseMessage.value = error.message;
+        isEmptyList.value = error.message.includes('No record found');
+    }
+    finally {
+        loading.value = false;
+        isEmptyList.value = false;
+    }
 };
 
 
