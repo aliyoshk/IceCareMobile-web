@@ -66,7 +66,9 @@
                         <td>{{ formatDate(item.transactionDate) }}</td>
                         <td>{{ item.transferReference || '-' }}</td>
                         <td>{{ item.customerName || '-' }}</td>
-                        <td>{{ formatCurrency(calculateTotalAmount(item.bankDetails)) }}</td>
+                        <td>{{ formatCurrency(item.bankDetails && item.bankDetails.length > 0 ?
+                            calculateTotalAmount(item.bankDetails) : item.totalAmount) }}</td>
+                        <!-- <td>{{ formatCurrency(calculateTotalAmount(item.bankDetails)) }}</td> -->
                         <td>{{ item.status }}</td>
                         <td> {{ item.category }}</td>
                         <td class="view" @click="view(item)">View</td>
@@ -141,6 +143,7 @@ onMounted(async () => {
 
 const onMountedHandler = async () => {
     loading.value = true;
+    response.value = [];
 
     try {
         if (selectedCard === 'Pending') {
@@ -216,9 +219,6 @@ const done = () => {
 };
 
 const calculateTotalAmount = (bankDetails) => {
-    if (!bankDetails || bankDetails.length === 0) {
-        return totalAmount.value;
-    }
     return bankDetails.reduce((total, bankDetail) => total + (bankDetail.amountTransferred || 0), 0);
 };
 
@@ -246,26 +246,47 @@ const deleteItem = (item) => {
 };
 
 const deleteRecord = async (item) => {
+    loading.value = true;
     try {
         if (onOptionChanged.value === 'Transfer') {
-            const pendingResponse = await deleteTransferUseCase(item.id);
-            console.log('Delete Transfer Response:', pendingResponse);
-            response.value = pendingResponse.data || [];
+            const response = await deleteTransferUseCase(item.id);
+            console.log('Delete Transfer Response:', response);
+            if (response.success) {
+                isEndPointHit.value = true;
+                showApiDialog.value = true;
+                apiStatus.value = true;
+                responseMessage.value = response.message;
+            }
         }
         else if (onOptionChanged.value === 'Account Payment') {
-            const pendingResponse = await deleteAccountPaymentUseCase(item.id);
-            console.log('Delete Account Payment Response:', pendingResponse);
-            response.value = pendingResponse.data || [];
+            const response = await deleteAccountPaymentUseCase(item.id);
+            console.log('Delete Account Payment Response:', response);
+            if (response.success) {
+                isEndPointHit.value = true;
+                showApiDialog.value = true;
+                apiStatus.value = true;
+                responseMessage.value = response.message;
+            }
         }
         else if (onOptionChanged.value === 'Third party') {
-            const pendingResponse = await deleteThirdPartyUseCase(item.id);
-            console.log('Delete Third party Response:', pendingResponse);
-            response.value = pendingResponse.data || [];
+            const response = await deleteThirdPartyUseCase(item.id);
+            console.log('Delete Third party Response:', response);
+            if (response.success) {
+                isEndPointHit.value = true;
+                showApiDialog.value = true;
+                apiStatus.value = true;
+                responseMessage.value = response.message;
+            }
         }
         else if (onOptionChanged.value === 'Account Top Up') {
-            const pendingResponse = await deleteAccountTopUpUseCase(item.id);
-            console.log('Delete Account Top Up Response:', pendingResponse);
-            response.value = pendingResponse.data || [];
+            const response = await deleteAccountTopUpUseCase(item.id);
+            console.log('Delete Account Top Up Response:', response);
+            if (response.success) {
+                isEndPointHit.value = true;
+                showApiDialog.value = true;
+                apiStatus.value = true;
+                responseMessage.value = response.message;
+            }
         }
     }
     catch (error) {

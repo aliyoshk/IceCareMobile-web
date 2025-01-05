@@ -36,7 +36,7 @@ export const API_ENDPOINTS = {
   APPROVE_ACCOUNT_PAYMENT: (id) => `Admin/ConfirmAccountPayment?id=${id}`,
   DELETE_ACCOUNT_PAYMENT_RECORD: (id) => `Admin/DeleteAccountPaymentRecord/${id}`,
   GET_THIRD_PARTY_TRANSFER: (statusValue) => `Admin/GetThirdPartyTransfers?status=${statusValue}`,
-  APPROVE_THIRD_PARTY_TRANSFER: (id) => `Admin/CompleteThirdPartyTransfer?id=${id}`,
+  APPROVE_THIRD_PARTY_TRANSFER: (id) => `Admin/ComfirmThirdPartyTransfer?id=${id}`,
   DELETE_THIRD_PARTY_RECORD: (id) => `Admin/DeleteThirdPartyTransferRecord/${id}`,
   GET_ACCOUNT_TOPUPS: (statusValue) =>  `Admin/GetAccountTopUps?status=${statusValue}`,
   APPROVE_ACCOUNT_TOPUP: 'Admin/ConfirmAccountTopUp',

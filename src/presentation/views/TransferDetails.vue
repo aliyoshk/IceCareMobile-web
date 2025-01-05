@@ -40,19 +40,29 @@
                         <br>
                         <div class="name">
                             <h5>Total Amount</h5>
-                            <h5>Dollar Rate</h5>
+                            <h5>{{ selectedCustomer.category === 'ThirdPartyPayment' ? 'Receivers Name' : 'Dollar Rate'
+                                }}</h5>
+                            <!-- <h5>Dollar Rate</h5> -->
                         </div>
                         <div class="name">
                             <h3 id="boldText">{{ formatCurrency(totalAmount) }}</h3>
-                            <h3 id="boldText">{{ formatCurrency(selectedCustomer.dollarRate) }}</h3>
+                            <h3 id="boldText">{{ selectedCustomer.category === 'ThirdPartyPayment' ?
+                                selectedCustomer.accountName :
+                                formatCurrency(selectedCustomer.dollarRate) }}
+                            </h3>
                         </div>
                         <div class="name" id="spacer">
                             <h5>Transfer Category</h5>
-                            <h5>Dollar Quantity</h5>
+                            <h5>{{ selectedCustomer.category === 'ThirdPartyPayment' ? 'Account No.' : 'Dollar Quantity'
+                                }}</h5>
+                            <!-- <h5>Dollar Quantity</h5> -->
                         </div>
                         <div class="name">
                             <h3 id="boldText">{{ selectedCustomer.category }}</h3>
-                            <h3 id="boldText">{{ formatCurrency(selectedCustomer.dollarAmount, 'USD') }}</h3>
+                            <h3 id="boldText">{{ selectedCustomer.category === 'ThirdPartyPayment' ?
+                                selectedCustomer.accountNumber :
+                                formatCurrency(selectedCustomer.dollarAmount, 'USD') }}
+                            </h3>
                         </div>
                     </div>
                 </div>
@@ -88,7 +98,7 @@
                     </div>
                 </div>
 
-                <button class="btn-approve" @click="approve">Approve</button>
+                <button class="btn-approve" @click="approve" v-if="selectedCustomer.status !== 'Confirmed'">Approve</button>
 
             </section>
 
@@ -229,6 +239,8 @@ const fetchData = () => {
             totalAmount.value += bankDetail.amountTransferred || 0;
             banks.value.push(bankDetail);
         });
+    } else {
+        totalAmount.value = selectedCustomer.totalAmount;
     }
 
     console.log('Receipts', receipts.value)
