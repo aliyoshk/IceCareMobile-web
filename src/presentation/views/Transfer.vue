@@ -144,6 +144,8 @@ onMounted(async () => {
 const onMountedHandler = async () => {
     loading.value = true;
     response.value = [];
+    totalAmount.value = 0;
+    totalRecord.value = 0;
 
     try {
         if (selectedCard === 'Pending') {
@@ -197,7 +199,7 @@ const onMountedHandler = async () => {
                 });
             }
             else {
-                totalAmount.value = item.totalAmount;
+                totalAmount.value += item.totalAmount;
             }
         });
         totalRecord.value = response.value.length;
