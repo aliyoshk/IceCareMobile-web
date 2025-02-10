@@ -123,13 +123,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { formatCurrency, formatDate, formatEmail } from '@/core/utils/helpers';
 import Spinner from '../components/Spinner.vue';
 import { approveTransfer, approveAccountPaymentUseCase, approveThirdPartyUseCase, approveAccountTopUpUseCase } from '@/domain/useCases/dashboardUseCase';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import CustomDialog from '../components/CustomDialog.vue';
+import { useTransferStore } from '@/presentation/store/transferStore';
 
 const router = useRouter();
 const route = useRoute();
@@ -146,7 +147,10 @@ const responseMessage = ref('')
 const apiStatus = ref(false);
 const showApiDialog = ref(false);
 
-//const selectedCustomer = JSON.parse(route.query.selectedCustomer) || [];
+const customerStore = useTransferStore();
+const piniaSent = computed(() => customerStore.selectedCustomer);
+console.log('Data sent through pinia is ', piniaSent);
+
 const selectedCustomer = JSON.parse(sessionStorage.getItem('selectedCustomer'));
 console.log(selectedCustomer);
 

@@ -224,7 +224,7 @@ export default {
       return this.customer.paymentCurrency === 'Dollar';
     },
     shouldPopulateValue() {
-      const totalAmountNaira = parseCurrencyValue(this.customer.totalAmountNaira );
+      let totalAmountNaira = parseCurrencyValue(this.customer.totalAmountNaira );
       const amountDollar = parseCurrencyValue(this.customer.amountDollar);
       const dollarRate = parseCurrencyValue(this.customer.dollarRate);
       

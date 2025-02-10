@@ -43,10 +43,12 @@
             <td v-if="!(isPending || isRejected)">{{ item.accountNumber }}</td>
             <td>{{ item.status }}</td>
             <td v-if="!isPending">{{ item.reviewedBy.split(' ')[0] }}</td>
-            <div class="action" v-if="isPending">
-              <td class="approve" @click="approve(item, 'Approve')">Approve</td>
-              <td class="reject" @click="Reject(item, 'Reject')">Reject</td>
-            </div>
+            <td v-if="isPending">
+              <div class="action">
+                <span class="approve" @click="approve(item, 'Approve')">Approve</span>
+                <span class="reject" @click="Reject(item, 'Reject')">Reject</span>
+              </div>
+            </td>
             <td class="delete" @click="deleteRecord(item)">Delete</td>
           </tr>
         </tbody>
@@ -71,13 +73,11 @@
 
 import { useRouter, useRoute } from 'vue-router';
 import { ref, computed, onMounted, watchEffect } from 'vue';
-import imgx from '@/assets/ic_supplier.svg';
 import { useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import Spinner from '../components/Spinner.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import CustomDialog from '../components/CustomDialog.vue';
-import { handleApiError } from '../../core/utils/errorHandler';
 import { getPendingRegistration, getApprovedUsers, getRejectedUsers, attestRegistration, deleteUserUseCase } from '@/domain/useCases/dashboardUseCase';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';

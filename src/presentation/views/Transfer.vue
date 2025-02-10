@@ -102,6 +102,7 @@ import { getPendingTransfer, getApprovedTransfer, deleteTransferUseCase } from '
 import { getAccountPaymentUseCase, deleteAccountPaymentUseCase } from '@/domain/useCases/dashboardUseCase';
 import { getThirdPartyUseCase, deleteThirdPartyUseCase } from '@/domain/useCases/dashboardUseCase';
 import { getAccountTopUpUseCase, deleteAccountTopUpUseCase } from '@/domain/useCases/dashboardUseCase';
+import { useTransferStore } from '@/presentation/store/transferStore';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
@@ -123,7 +124,7 @@ const onOptionChanged = ref('');
 const options = ref([]);
 const selectedOption = ref([]);
 const isEndPointHit = ref(false);
-
+const customerStore = useTransferStore();
 const selectedCard = route.query.selectedCard;
 
 options.value = [{ name: 'Transfer' }, { name: 'Account Payment' }, { name: 'Third party' }, { name: 'Account Top Up' }];
@@ -239,6 +240,7 @@ const view = (item) => {
     toast.success('Selected is:' + item.customerName);
 
     sessionStorage.setItem('selectedCustomer', JSON.stringify(item));
+    customerStore.setSelectedCustomer(item);
     router.push({ name: 'TransferDetails' });
 };
 
