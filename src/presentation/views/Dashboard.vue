@@ -278,7 +278,6 @@ const updateDollar = async () => {
         apiStatus.value = response.success;
         responseMessage.value = response.message;
       }
-
     }
     catch (error) {
       showApiDialog.value = true;
@@ -331,13 +330,10 @@ const onMountedHandler = async () => {
       name: 'Total Monthly Income ($)',
       data: monthlyIncome,
     }];
-
-
     //   barChartSeries.value = [{
     //   name: 'Total Monthly Income ($)',
     //   data: dashboardData.data.monthlyTransfers.map(item => item.totalAmount),
     // }];
-
     metrics.value = dashboardData.metrics || [
       { title: 'Current Month Earnings', value: formatCurrency(dashboardData.data.totalMonthlyNairaTransfer) || formatCurrency(0), icon: ic_image },
       { title: 'Total No of Transactions', value: dashboardData.data.monthlyTransfers.length, icon: ic_image },
@@ -348,7 +344,6 @@ const onMountedHandler = async () => {
     availableDollar.value = formatCurrency(dashboardData.data.availableDollarAmount, 'USD') || '';
     dollarRate.value = formatCurrency(dashboardData.data.dollarRate);
 
-
     recentTransfers.value = dashboardData.data.pendingTransfer || [];
     pendingRegistration.value = dashboardData.data.pendingRegistration || [];
 
@@ -356,7 +351,6 @@ const onMountedHandler = async () => {
 
     pieChartData.value.labels = dashboardData.pieChartLabels || ['Category A', 'Category B', 'Category C', 'Category D'];
     pieChartData.value.datasets[0].data = dashboardData.pieChartData || [300, 450, 100, 150];
-
   }
   catch (error) {
     showApiDialog.value = true;

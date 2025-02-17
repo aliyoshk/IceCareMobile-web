@@ -263,6 +263,7 @@ const deleteRecord = async (item) => {
             }
         }
         else if (onOptionChanged.value === 'Account Payment') {
+            console.log("Deleting account payment");
             const response = await deleteAccountPaymentUseCase(item.id);
             console.log('Delete Account Payment Response:', response);
             if (response.success) {

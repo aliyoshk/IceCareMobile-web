@@ -195,7 +195,9 @@ const handleApprove = async () => {
             }
         }
         else if (selectedCustomer.category === 'AccountBalancePayment') {
+            console.log("Approving account payment");
             const response = await approveAccountPaymentUseCase(selectedCustomer.id);
+            console.log("Approving account payment, response", response);
             if (response.success || response.data.success) {
                 showApiDialog.value = true;
                 apiStatus.value = true;

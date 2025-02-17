@@ -320,10 +320,11 @@ const validateFormField = (customerRequest) => {
   } else if (parseCurrencyValue(customerRequest.dollarRate) === '') {
     toast.success('Enter the dollar rate');
     return false;
-  } else if (parseCurrencyValue(customerRequest.amountDollar) === '') {
-    toast.success('Enter amount of dollar');
-    return false;
-  }
+  } 
+  // else if (parseCurrencyValue(customerRequest.amountDollar) === '') {
+  //   toast.success('Enter amount of dollar');
+  //   return false;
+  // }
 
   return true;
 };
